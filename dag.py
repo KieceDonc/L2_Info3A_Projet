@@ -96,8 +96,8 @@ class Var(M):
       return Nb(0)
 
 
-x=Var("x")
-y=Var("y")
-z=Var("z")
-cercle = Plus(Plus(Mult(x,x),Mult(y,y)),Opp(Nb(-1)))
-print(cercle.eval( { 'x' : 1, 'y': -1}))
+#x=Var("x")
+#y=Var("y")
+#z=Var("z")
+#cercle = Plus(Plus(Mult(x,x),Mult(y,y)),Opp(Nb(-1)))
+#print(cercle.eval( { 'x' : 1, 'y': -1}))

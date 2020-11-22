@@ -14,9 +14,9 @@ def somme(p,q):
     k+=1
   return t
 
-p = [6,4,3,17]
-q = [8,0,5]
-print(somme(p,q))
+#p = [6,4,3,17]
+#q = [8,0,5]
+#print(somme(p,q))
 
 def product(p,q):
   n = len(p)-1
@@ -31,9 +31,9 @@ def product(p,q):
     t[k]=ck
   return t
 
-p = [5,1]
-q = [3,2,1]
-print(product(p,q))
+#p = [5,1]
+#q = [3,2,1]
+#print(product(p,q))
 
 def oppose(p):
   t = []
@@ -41,5 +41,12 @@ def oppose(p):
     t.insert(i,p[i]*-1)
   return t
 
-p = [1,2,-5,3,-9]
-print(oppose(p))
+def evalNormalPoly(coeffs,val):
+  result = 0 
+  for k in range(len(coeffs)):
+    result+=coeffs[k]*val**k
+  return result
+
+print(evalNormalPoly([1,1,1],0.5))
+#p = [1,2,-5,3,-9]
+#print(oppose(p))
