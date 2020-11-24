@@ -1,3 +1,14 @@
+from dag import *
+from basique import *
+
+def casteljau(polbe) :
+	n = len(polbe)
+	couches=[None]*n
+	couches[0] = polbe
+	for c in range(1, n):
+		couches[ c ] = milieux( couches[ c-1 ])
+	return (vecteur( n, (lambda i : couches[i][0])), vecteur( n, (lambda i : couches[n-i-1][i])))
+
 # calcul un factoriel
 def fact(n): 
   if(n<2):
@@ -60,12 +71,46 @@ def maxtab(v):
       _max = v[x]
   return _max
 
-# recherche des racines dans la base de bernstein
-def solve(epsilon,tab,t1,t2,soluc):
-  if(mintab(tab)>=0 and maxtab(tab)<=0):
-    return 0
-  else: 
-    if(t2-t1<epsilon):
-      return 0#cons((t1+t2/2),soluc)
-    else:
-      return 0
+'''
+si polynome p est dans la base de bernstein, alors p( [0, 1]) est dans [mintab( p_i), maxtab( p_i)] , les p_i etant les coefs de p dans la base de bernstein
+casterljau( p dans la base de bernstein) rend p1(X: 0..0.5) les coefs de p( 2x) 
+et de p2(X:0.5, 1) les coefs de p( 2x-1)
+'''
+
+def solve( epsilon, polbe, t1, t2, racines):
+	(mi, ma) = (mintab( polbe), maxtab( polbe))	
+	if ma < 0 or 0 < mi :
+		return racines
+	else:
+		tm = milieu( t1, t2)
+		dt = t2 - t1
+		if dt < epsilon :
+			return cons( tm, racines)
+		else :
+			(p1, p2)=casteljau( polbe)
+			return solve( epsilon, p1, t1, tm, solve( epsilon, p2, tm, t2, racines))
+
+'''
+	print( solve( 1e-10, [ 1, -2, -2, 1], 0., 1., None))
+	print( solve( 1e-10, [ 1, -3, 3, -1], 0., 1., None)) 
+'''
+
+def solvegt1(epsilon, polca):
+	n= len(polca)
+	d= n-1
+	aux = vecteur(n, (lambda i: polca[d-i]))
+	polbe= tobernstein( aux)
+	zeros= solve(epsilon, polbe, 0., 1., None)
+	return reverse(mymap((lambda x: 1. / x), zeros), None)	
+
+print(solvegt1( 1e-10, [ -7, 1] ) ) # 7
+print(solvegt1( 1e-10, [15, -8, 1]) ) # 3, 5
+t=Var('t')
+print(solvegt1( 1e-10, ((t-Nb(3))*(t-Nb(5))).polent()))
+print(solvegt1( 1e-10, ((t-Nb(3))*(t-Nb(13.))*(t-Nb(5))).polent()))
+
+def racines(eps, polca):
+	return solvegt1( eps, polca)
+
+
+

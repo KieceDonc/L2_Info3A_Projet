@@ -1,4 +1,4 @@
-def somme(p,q):
+def sommePoly(p,q):
   n = len(p)
   m = len(q)
   r = max(n,m)
@@ -14,11 +14,7 @@ def somme(p,q):
     k+=1
   return t
 
-#p = [6,4,3,17]
-#q = [8,0,5]
-#print(somme(p,q))
-
-def product(p,q):
+def productPoly(p,q):
   n = len(p)-1
   m = len(q)-1
   k = 0 
@@ -31,18 +27,8 @@ def product(p,q):
     t[k]=ck
   return t
 
-#p = [5,1]
-#q = [3,2,1]
-#print(product(p,q))
-
-def oppose(p):
+def opposePoly(p):
   t = []
   for i in range(len(p)):
     t.insert(i,p[i]*-1)
   return t
-
-def evalPoly(coeffs,val):
-  result = 0 
-  for k in range(len(coeffs)):
-    result+=coeffs[k]*val**k
-  return result
