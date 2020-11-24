@@ -41,12 +41,8 @@ def oppose(p):
     t.insert(i,p[i]*-1)
   return t
 
-#def evalNormalPoly(coeffs,val):
-#  result = 0 
-#  for k in range(len(coeffs)):
-#    result+=coeffs[k]*val**k
-#  return result
-#print(evalNormalPoly([1,1,1],0.5))
-
-#p = [1,2,-5,3,-9]
-#print(oppose(p))
+def evalPoly(coeffs,val):
+  result = 0 
+  for k in range(len(coeffs)):
+    result+=coeffs[k]*val**k
+  return result

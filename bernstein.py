@@ -31,17 +31,41 @@ def tobernstein(ci):
   for i in range(deg+1):
     current_bi = 0
     for k in range(min(i+1,deg+1)):
-      print(ci[k])
-      current_bi+=(ci[k]*binom(i,k))/binom(deg,k)# evalNormalPoly(ci,k/n)
+      current_bi+=(ci[k]*binom(i,k))/binom(deg,k)
     bi.append(current_bi)
   return bi
 
-def evalpol(ci,t):
-  n = len(ci)
+# évalue la valeur d'un polynome à base canonique ( aux coefficients ci ) vers la base de bernstein
+def evalPoly(ci,t):
+  deg = len(ci)-1
   p = 0
   bi = tobernstein(ci)
-  for i in range(n):
-    p+=bi[i]*bernstein(n,i,t)
+  for i in range(deg+1):
+    p+=bi[i]*bernstein(deg,i,t)
   return p
 
-print(tobernstein( [0., 10., 0.]))
+# recherche l'élément le plus petit dans le tableau
+def mintab(v):
+  _min = v[0]
+  for x in range(len(v)):
+    if(v[x]<_min):
+      _min = v[x]
+  return _min
+
+# recherche l'élément le plus grand dans le tableau
+def maxtab(v):
+  _max = v[0]
+  for x in range(len(v)):
+    if(v[x]<_max):
+      _max = v[x]
+  return _max
+
+# recherche des racines dans la base de bernstein
+def solve(epsilon,tab,t1,t2,soluc):
+  if(mintab(tab)>=0 and maxtab(tab)<=0):
+    return 0
+  else: 
+    if(t2-t1<epsilon):
+      return 0#cons((t1+t2/2),soluc)
+    else:
+      return 0
