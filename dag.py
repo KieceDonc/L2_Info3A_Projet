@@ -23,8 +23,8 @@ class Opp( M):
 	def evalsymb(self, dico):
 		return Opp(self.a.evalsymb(dico))
 
-	def polent( self) :
-		return opposePoly(self.a.polent())
+	def topolent( self) :
+		return opposePoly(self.a.topolent())
 
 	def derivee(self, name) :
 		return Opp(self.a.derivee(name))
@@ -40,8 +40,8 @@ class Plus(M):
 	def evalsymb(self, dico):
 		return self.a.evalsymb(dico) + self.b.evalsymb(dico)
 
-	def polent(self):
-		return sommePoly(self.a.polent(), self.b.polent())
+	def topolent(self):
+		return sommePoly(self.a.topolent(), self.b.topolent())
 
 	def derivee(self, name):
 		return self.a.derivee(name) + self.b.derivee(name)
@@ -57,8 +57,8 @@ class Mult(M):
 	def evalsymb(self, dico):
 		return self.a.evalsymb(dico) * self.b.evalsymb(dico)
 
-	def polent(self) :
-		return productPoly(self.a.polent(), self.b.polent())
+	def topolent(self) :
+		return productPoly(self.a.topolent(), self.b.topolent())
 
 	def derivee(self, name) :
 		return self.a.derivee(name) * self.b + self.a * self.b.derivee(name)
@@ -74,7 +74,7 @@ class Nb(M):
 	def evalsymb(self, dico):
 		return self
 
-	def polent(self) :
+	def topolent(self) :
 		return [self.nb]
 
 	def derivee(self, name) :
@@ -94,25 +94,13 @@ class Var(M):
 			return dico[ self.nom ]
 		else :
 			return self	
-	def polent( self) :
+	def topolent( self) :
 		if self.nom == 't' :
 					return [ 0, 1] 
 		else :
-			print( 'erreur dans Var.polent: pas t mais ' + self.nom)
+			print( 'erreur dans Var.topolent: pas t mais ' + self.nom)
 	def derivee( self, name) :
 		if name==self.nom :
 			return Nb( 1.)
 		else:
 			return Nb( 0.)
-
-x=Var('x')
-y=Var('y')
-z=Var('z')
-
-cercle=x*x+y*y-Nb(1)
-#print( (0, cercle.eval( { 'x':1, 'y':0 } )))
-#print( (499, cercle.eval( { 'x':10, 'y':20 } )))
-tmp= cercle.evalsymb( { 'x': Var('t'), 'y': Var('t') })
-#print( (19999, tmp.eval( {'t': 100 }) ))
-#print( ([-1, 0, 2], tmp.polent() ))
-#print( ([0, 4], tmp.derivee( 't').polent() ))

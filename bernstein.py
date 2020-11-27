@@ -21,9 +21,7 @@ def fact(n):
 # calcul le coefficient binomial de (n)
 #                                   (i)
 def binom(n,i):
-  if(n==2 and i == 1):
-    return 2
-  if(i<2 or n<2):
+  if(i<1 or n<1):
     return 1
   n_fac = fact(n) # valeur de n!
   i_fac = fact(i) # valeur de i!
@@ -67,7 +65,7 @@ def mintab(v):
 def maxtab(v):
   _max = v[0]
   for x in range(len(v)):
-    if(v[x]<_max):
+    if(v[x]>_max):
       _max = v[x]
   return _max
 
@@ -77,18 +75,18 @@ casterljau( p dans la base de bernstein) rend p1(X: 0..0.5) les coefs de p( 2x)
 et de p2(X:0.5, 1) les coefs de p( 2x-1)
 '''
 
-def solve( epsilon, polbe, t1, t2, racines):
+def solve(epsilon, polbe, t1, t2, racines):
 	(mi, ma) = (mintab( polbe), maxtab( polbe))	
 	if ma < 0 or 0 < mi :
 		return racines
 	else:
-		tm = milieu( t1, t2)
+		tm = milieu(t1, t2)
 		dt = t2 - t1
 		if dt < epsilon :
-			return cons( tm, racines)
+			return cons(tm, racines)
 		else :
-			(p1, p2)=casteljau( polbe)
-			return solve( epsilon, p1, t1, tm, solve( epsilon, p2, tm, t2, racines))
+			(p1, p2)=casteljau(polbe)
+			return solve(epsilon, p1, t1, tm, solve(epsilon, p2, tm, t2, racines))
 
 '''
 	print( solve( 1e-10, [ 1, -2, -2, 1], 0., 1., None))
@@ -103,14 +101,12 @@ def solvegt1(epsilon, polca):
 	zeros= solve(epsilon, polbe, 0., 1., None)
 	return reverse(mymap((lambda x: 1. / x), zeros), None)	
 
+def racines(eps, polca):
+	return solvegt1(eps, polca)
+'''
 print(solvegt1( 1e-10, [ -7, 1] ) ) # 7
 print(solvegt1( 1e-10, [15, -8, 1]) ) # 3, 5
 t=Var('t')
-print(solvegt1( 1e-10, ((t-Nb(3))*(t-Nb(5))).polent()))
-print(solvegt1( 1e-10, ((t-Nb(3))*(t-Nb(13.))*(t-Nb(5))).polent()))
-
-def racines(eps, polca):
-	return solvegt1( eps, polca)
-
-
-
+print(solvegt1( 1e-10, ((t-Nb(3))*(t-Nb(5))).topolent()))
+print(solvegt1( 1e-10, ((t-Nb(3))*(t-Nb(13.))*(t-Nb(5))).topolent()))
+'''

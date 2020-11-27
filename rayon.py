@@ -19,6 +19,9 @@ def normalize3(tup):
     else:
         return (a/n, b/n, c/n)
 
+def topolent(e):
+    return e.topolent()
+
 class Obj(object):
     def __init__(self):
         " "
@@ -62,8 +65,8 @@ class Prim(Obj):
         "y": Nb(rayon.source[1]) + Nb(rayon.dir[1])*Var("t"),
         "z": Nb(rayon.source[2]) + Nb(rayon.dir[2])*Var("t")}
         expression_en_t=self.fonc.evalsymb( dico)
-        pol_t = topolent( expression_en_t)
-        return racines(pol_t)
+        pol_t = topolent(expression_en_t)
+        return racines(1e-9,pol_t)
 
     def normale(self, tup):
         (x,y,z) = tup
@@ -169,8 +172,11 @@ def roman():
     z=Var("z")
     return ( x * x * y * y + x * x * z * z + y * y * z * z - Nb(2.) * x * y * z)
 
+
 camera.hsizeworld=10.
+camera.nom="steiner2.png"
 raycasting( camera, Prim( steiner2(), (255,200, 255)))
+'''
 camera.hsizeworld=1.5
 camera.nom="roman.png"
 raycasting( camera, Prim( roman(), (255,200, 255)))
@@ -178,6 +184,6 @@ camera.nom="hyper1.png"
 raycasting( camera, Prim( hyperboloide_1nappe(), (255,200, 255)))
 camera.nom="hyper2.png"
 raycasting( camera, Prim( hyperboloide_2nappes(), (255,200, 255)))
-camera.nom="steiner2.png"
 camera.nom="steiner4.png"
 raycasting( camera, Prim( steiner4(), (255,200, 255)))
+'''
