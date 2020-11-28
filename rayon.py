@@ -168,57 +168,99 @@ def raycastingIntersection(cam,object0,object1):
                 (r,v,b))
         img.show()
         img.save( cam.nom)
-'''
-def _raycasting(cam, operation_type,object0,object1):
+
+def raycastingDifference(cam,object0,object1):
     if(object0==None or object1==None):
         print("raycasting erreur : un paramètre est null")
-    img=Image.new("RGB", (2*cam.hsizewin+1, 2*cam.hsizewin+1), (255,255,255))
-    for xpix in range( -cam.hsizewin, cam.hsizewin+1, 1):
-        for zpix in range( -cam.hsizewin, cam.hsizewin+1, 1):
-            rayon= cam.generate_ray( xpix, zpix)
-            roots_obj0 = 0
-            roots_obj1 = 0 
-            roots=objet.intersection(rayon)
-            doTreatment = 0
-            if operation_type==union :
-                return 0
-            elif operation_type==intersection:
-                if roots_obj0 == None or roots_obj1 == None:
+    else:  
+        img=Image.new("RGB", (2*cam.hsizewin+1, 2*cam.hsizewin+1), (255,255,255))
+        for xpix in range(-cam.hsizewin, cam.hsizewin+1, 1):
+            for zpix in range(-cam.hsizewin, cam.hsizewin+1, 1):
+                rayon= cam.generate_ray( xpix, zpix)
+                roots_obj0 = object0.intersection(rayon)
+                if roots_obj0==None:
                     (r,v,b)= cam.background
                 else:
-                    doTreatment
-            elif operation_type==diff:
-                return 0
-            else:
-                print('raycasting erreur : operation_type est invalide. intersection, union, diff sont les seuls choix valide')
-            if doTreatment == 1:
-                t= hd(roots) # roots[0] #c'est le 1er element (un t) de la pire (tete, queue)
-                pt=(xo,yo,zo)= (rayon.source[0]+ t*rayon.dir[0],
-                rayon.source[1]+ t*rayon.dir[1],
-                rayon.source[2]+ t*rayon.dir[2])
-                (a,b,c)=normalize3( objet.normale(pt))
-                (rr,vv,bb)=objet.color
-                (rr,vv,bb)= (float(rr), float(vv), float(bb))
-                ps=pscal3( (a,b,c), cam.soleil)
-                if ps < -1. or 1 < ps:
-                    print("PS="+str(ps))
-                    ps = clamp( -1., 1., ps)
-                coef= interpole( -1., 0.5, 1., 1., ps)
-                r=coef*rr
-                v=coef*vv
-                b=coef*bb
-                (r,v,b) = (int(r), int(v), int(b))
-            img.putpixel(
-            (xpix+cam.hsizewin,
-            2*cam.hsizewin-(zpix+cam.hsizewin)),
-            (r,v,b))
-    img.show()
-    img.save( cam.nom)
-oeil=(0.001,-4.,0.003)
-droite= (1.,0.,0.)
-regard= (0.,1.,0.)
-vertical=(0.,0.,1.)
-'''
+                    roots_obj1 = object1.intersection(rayon)
+                    if roots_obj1 != None:
+                        (r,v,b)= cam.background
+                    else:
+                        t= hd(roots_obj0) # roots[0] #c'est le 1er element (un t) de la pire (tete, queue)
+                        pt=(xo,yo,zo)= (rayon.source[0]+ t*rayon.dir[0],
+                        rayon.source[1]+ t*rayon.dir[1],
+                        rayon.source[2]+ t*rayon.dir[2])
+                        (a,b,c)=normalize3(object0.normale(pt))
+                        (rr,vv,bb)=object0.color
+                        (rr,vv,bb)= (float(rr), float(vv), float(bb))
+                        ps=pscal3((a,b,c), cam.soleil)
+                        if ps < -1. or 1 < ps:
+                            print("PS="+str(ps))
+                            ps = clamp( -1., 1., ps)
+                        coef= interpole( -1., 0.5, 1., 1., ps)
+                        r=coef*rr
+                        v=coef*vv
+                        b=coef*bb
+                        (r,v,b) = (int(r), int(v), int(b))
+                img.putpixel(
+                (xpix+cam.hsizewin,
+                2*cam.hsizewin-(zpix+cam.hsizewin)),
+                (r,v,b))
+        img.show()
+        img.save( cam.nom)
+
+def raycastingUnion(cam,object0,object1):
+    if(object0==None or object1==None):
+        print("raycasting erreur : un paramètre est null")
+    else:  
+        img=Image.new("RGB", (2*cam.hsizewin+1, 2*cam.hsizewin+1), (255,255,255))
+        for xpix in range(-cam.hsizewin, cam.hsizewin+1, 1):
+            for zpix in range(-cam.hsizewin, cam.hsizewin+1, 1):
+                rayon= cam.generate_ray( xpix, zpix)
+                roots_obj0 = object0.intersection(rayon)
+                roots_obj1 = object1.intersection(rayon)
+                if roots_obj0==None and roots_obj1==None:
+                    (r,v,b)= cam.background
+                else:
+                    objectToWorkWith = None
+                    t = 0 
+                    if roots_obj0!=None and roots_obj1 == None:
+                        (rr,vv,bb)=object0.color
+                        (rr,vv,bb)= (float(rr), float(vv), float(bb))
+                        objectToWorkWith = object0
+                        t = hd(roots_obj0)
+                    elif roots_obj1!=None and roots_obj0 == None:
+                        (rr,vv,bb)=object1.color
+                        (rr,vv,bb)= (float(rr), float(vv), float(bb))      
+                        objectToWorkWith = object1          
+                        t = hd(roots_obj1)
+                    else:
+                        (rr0,vv0,bb0)=object0.color
+                        (rr0,vv0,bb0)= (float(rr0), float(vv0), float(bb0))
+                        (rr1,vv1,bb1)=object1.color
+                        (rr1,vv1,bb1)= (float(rr1), float(vv1), float(bb1))
+                        (rr,vv,bb)= ((rr0+rr1)/2, (vv0+vv1)/2, (bb0+bb1)/2)
+                        objectToWorkWith = object0
+                        t = hd(roots_obj0)
+                    pt=(xo,yo,zo)= (rayon.source[0]+ t*rayon.dir[0],
+                    rayon.source[1]+ t*rayon.dir[1],
+                    rayon.source[2]+ t*rayon.dir[2])
+                    (a,b,c)=normalize3(objectToWorkWith.normale(pt))
+                    ps=pscal3((a,b,c), cam.soleil)
+                    if ps < -1. or 1 < ps:
+                        print("PS="+str(ps))
+                        ps = clamp( -1., 1., ps)
+                    coef= interpole( -1., 0.5, 1., 1., ps)
+                    r=coef*rr
+                    v=coef*vv
+                    b=coef*bb
+                    (r,v,b) = (int(r), int(v), int(b))
+                img.putpixel(
+                (xpix+cam.hsizewin,
+                2*cam.hsizewin-(zpix+cam.hsizewin)),
+                (r,v,b))
+        img.show()
+        img.save( cam.nom)
+        
 camera=Camera( oeil, droite, regard, vertical, 1.5, 100, normalize3((0., -1., 2.)))
 def boule(tup1, r):
     (cx,cy,cz) = tup1
@@ -266,18 +308,19 @@ def roman():
 
 
 
-tore = Prim(tore(0.45, 1.), ((255,250, 255)))
-boule = Prim(boule( (0., 2., -0.5), 1.), (255,250, 255))
+tore = Prim(tore(0.45, 1.), ((0,0, 255)))
+boule = Prim(boule( (0., 2., -0.5), 1.), (255,0, 0))
 
+camera.nom="union.png"
+raycastingUnion(camera,tore,boule)
+
+'''
 camera.nom="boule.png"
 raycasting(camera,boule)
 
 camera.nom="tore.png"
 raycasting(camera,tore)
 
-camera.nom="intersection.png"
-raycastingIntersection(camera,tore,boule)
-'''
 camera.nom="boule.png"
 raycasting(camera, Prim( boule( (0., 2., -0.5), 1.), ((255,255,255))))
 
@@ -300,4 +343,11 @@ raycasting( camera, Prim( hyperboloide_2nappes(), (255,200, 255)))
 
 camera.nom="steiner4.png"
 raycasting( camera, Prim( steiner4(), (255,200, 255)))
+'''
+
+'''
+
+https://fr.wikipedia.org/wiki/Th%C3%A9or%C3%A8me_de_Sturm
+https://fr.wikipedia.org/wiki/Algorithme_de_recherche_d%27un_z%C3%A9ro_d%27une_fonction
+
 '''
