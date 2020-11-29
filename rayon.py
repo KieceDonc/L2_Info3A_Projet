@@ -56,9 +56,13 @@ class Camera( object):
         return e.topolent()
 
 class Prim(Obj):
-    def __init__(self, fonc_xyz, color):
+    def __init__(self, fonc_xyz, color,transparency):
         self.fonc=fonc_xyz
         self.color=color
+        if transparency == None : 
+            self.transparency = 0
+        else : 
+            self.transparency = int(transparency)
 
     def intersection(self, rayon):
         dico = { "x": Nb(rayon.source[0]) + Nb(rayon.dir[0])*Var("t"),
@@ -86,11 +90,12 @@ def clamp(mi, ma, v):
     return min(ma, max( mi, v))
 
 def raycasting(cam, objet):
-    img=Image.new("RGB", (2*cam.hsizewin+1, 2*cam.hsizewin+1), (255,255,255))
+    img=Image.new("RGBA", (2*cam.hsizewin+1, 2*cam.hsizewin+1), (255,255,255,255))
     for xpix in range(-cam.hsizewin, cam.hsizewin+1, 1):
         for zpix in range(-cam.hsizewin, cam.hsizewin+1, 1):
             rayon= cam.generate_ray(xpix, zpix)
             roots=objet.intersection(rayon)
+            transparency = 255
             if None==roots:
                 (r,v,b)= cam.background
             else:
@@ -99,6 +104,7 @@ def raycasting(cam, objet):
                 rayon.source[1]+ t*rayon.dir[1],
                 rayon.source[2]+ t*rayon.dir[2])
                 (a,b,c)=normalize3(objet.normale(pt))
+                transparency = objet.transparency
                 (rr,vv,bb)=objet.color
                 (rr,vv,bb)= (float(rr), float(vv), float(bb))
                 ps=pscal3((a,b,c), cam.soleil)
@@ -113,7 +119,7 @@ def raycasting(cam, objet):
             img.putpixel(
             (xpix+cam.hsizewin,
             2*cam.hsizewin-(zpix+cam.hsizewin)),
-            (r,v,b))
+            (r,v,b,transparency))
     img.show()
     img.save( cam.nom)
 
@@ -123,19 +129,16 @@ regard= (0.,1.,0.)
 vertical=(0.,0.,1.)
 #le repere local est tel que regard=oy, vertical=oz, droite=ox, o=oeil
 
-intersection = 'intersection'
-union = 'union'
-diff = 'difference'
-
 def raycastingIntersection(cam,object0,object1):
     if(object0==None or object1==None):
         print("raycasting erreur : un paramètre est null")
     else:  
-        img=Image.new("RGB", (2*cam.hsizewin+1, 2*cam.hsizewin+1), (255,255,255))
+        img=Image.new("RGBA", (2*cam.hsizewin+1, 2*cam.hsizewin+1), (255,255,255,255))
         for xpix in range(-cam.hsizewin, cam.hsizewin+1, 1):
             for zpix in range(-cam.hsizewin, cam.hsizewin+1, 1):
                 rayon= cam.generate_ray( xpix, zpix)
                 roots_obj0 = object0.intersection(rayon)
+                transparency = 255
                 if roots_obj0==None:
                     (r,v,b)= cam.background
                 else:
@@ -153,6 +156,7 @@ def raycastingIntersection(cam,object0,object1):
                         (rr1,vv1,bb1)=object1.color
                         (rr1,vv1,bb1)= (float(rr1), float(vv1), float(bb1))
                         (rr,vv,bb)= ((rr0+rr1)/2, (vv0+vv1)/2, (bb0+bb1)/2)
+                        transparency = int((object0.transparency + object1.transparency)/2)
                         ps=pscal3((a,b,c), cam.soleil)
                         if ps < -1. or 1 < ps:
                             print("PS="+str(ps))
@@ -165,7 +169,7 @@ def raycastingIntersection(cam,object0,object1):
                 img.putpixel(
                 (xpix+cam.hsizewin,
                 2*cam.hsizewin-(zpix+cam.hsizewin)),
-                (r,v,b))
+                (r,v,b,transparency))
         img.show()
         img.save( cam.nom)
 
@@ -173,11 +177,12 @@ def raycastingDifference(cam,object0,object1):
     if(object0==None or object1==None):
         print("raycasting erreur : un paramètre est null")
     else:  
-        img=Image.new("RGB", (2*cam.hsizewin+1, 2*cam.hsizewin+1), (255,255,255))
+        img=Image.new("RGBA", (2*cam.hsizewin+1, 2*cam.hsizewin+1), (255,255,255,255))
         for xpix in range(-cam.hsizewin, cam.hsizewin+1, 1):
             for zpix in range(-cam.hsizewin, cam.hsizewin+1, 1):
                 rayon= cam.generate_ray( xpix, zpix)
                 roots_obj0 = object0.intersection(rayon)
+                transparency = 255
                 if roots_obj0==None:
                     (r,v,b)= cam.background
                 else:
@@ -192,6 +197,7 @@ def raycastingDifference(cam,object0,object1):
                         (a,b,c)=normalize3(object0.normale(pt))
                         (rr,vv,bb)=object0.color
                         (rr,vv,bb)= (float(rr), float(vv), float(bb))
+                        transparency = object0.transparency
                         ps=pscal3((a,b,c), cam.soleil)
                         if ps < -1. or 1 < ps:
                             print("PS="+str(ps))
@@ -204,7 +210,7 @@ def raycastingDifference(cam,object0,object1):
                 img.putpixel(
                 (xpix+cam.hsizewin,
                 2*cam.hsizewin-(zpix+cam.hsizewin)),
-                (r,v,b))
+                (r,v,b,transparency))
         img.show()
         img.save( cam.nom)
 
@@ -212,12 +218,13 @@ def raycastingUnion(cam,object0,object1):
     if(object0==None or object1==None):
         print("raycasting erreur : un paramètre est null")
     else:  
-        img=Image.new("RGB", (2*cam.hsizewin+1, 2*cam.hsizewin+1), (255,255,255))
+        img=Image.new("RGBA", (2*cam.hsizewin+1, 2*cam.hsizewin+1), (255,255,255))
         for xpix in range(-cam.hsizewin, cam.hsizewin+1, 1):
             for zpix in range(-cam.hsizewin, cam.hsizewin+1, 1):
                 rayon= cam.generate_ray( xpix, zpix)
                 roots_obj0 = object0.intersection(rayon)
                 roots_obj1 = object1.intersection(rayon)
+                transparency = 255
                 if roots_obj0==None and roots_obj1==None:
                     (r,v,b)= cam.background
                 else:
@@ -226,11 +233,13 @@ def raycastingUnion(cam,object0,object1):
                     if roots_obj0!=None and roots_obj1 == None:
                         (rr,vv,bb)=object0.color
                         (rr,vv,bb)= (float(rr), float(vv), float(bb))
+                        transparency = object0.transparency
                         objectToWorkWith = object0
                         t = hd(roots_obj0)
                     elif roots_obj1!=None and roots_obj0 == None:
                         (rr,vv,bb)=object1.color
                         (rr,vv,bb)= (float(rr), float(vv), float(bb))      
+                        transparency = object1.transparency
                         objectToWorkWith = object1          
                         t = hd(roots_obj1)
                     else:
@@ -239,6 +248,7 @@ def raycastingUnion(cam,object0,object1):
                         (rr1,vv1,bb1)=object1.color
                         (rr1,vv1,bb1)= (float(rr1), float(vv1), float(bb1))
                         (rr,vv,bb)= ((rr0+rr1)/2, (vv0+vv1)/2, (bb0+bb1)/2)
+                        transparency = int((object0.transparency + object1.transparency)/2)
                         objectToWorkWith = object0
                         t = hd(roots_obj0)
                     pt=(xo,yo,zo)= (rayon.source[0]+ t*rayon.dir[0],
@@ -257,7 +267,7 @@ def raycastingUnion(cam,object0,object1):
                 img.putpixel(
                 (xpix+cam.hsizewin,
                 2*cam.hsizewin-(zpix+cam.hsizewin)),
-                (r,v,b))
+                (r,v,b,transparency))
         img.show()
         img.save( cam.nom)
         
@@ -308,11 +318,17 @@ def roman():
 
 
 
-tore = Prim(tore(0.45, 1.), ((0,0, 255)))
-boule = Prim(boule( (0., 2., -0.5), 1.), (255,0, 0))
+tore = Prim(tore(0.45, 1.), (0,0, 255),200)
+boule = Prim(boule( (0., 2., -0.5), 1.), (255,0, 0), 150)
 
 camera.nom="union.png"
 raycastingUnion(camera,tore,boule)
+
+camera.nom="intersection.png"
+raycastingIntersection(camera,tore,boule)
+
+camera.nom="difference.png"
+raycastingDifference(camera,tore,boule)
 
 '''
 camera.nom="boule.png"
