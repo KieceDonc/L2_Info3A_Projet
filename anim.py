@@ -68,4 +68,3 @@ vertical=(0.,0.,1.)
 #ox, oy,oz orthogonaux et normés
 camera=Camera(oeil, droite, regard, vertical, 1.5, 100, normalize3((0., -1., 2.)))
 
-animation( camera, Prim( tore(0.45, 1.), (255, 0, 0)), 20, "IMG/roue")

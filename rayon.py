@@ -85,8 +85,6 @@ class Prim(Obj):
 
 class Union(Obj):
     def __init__(self,objectList):
-        if(len(objectList)<2):
-            print("Union erreur, au moins 2 objets doivent être transmis en paramètres pour une union")
         self.objectList = objectList
         self.objectNormale = 0
         self.color = 0
@@ -121,6 +119,70 @@ class Union(Obj):
 
     def normale(self,tup):
         return self.objectNormale.normale(tup)
+
+class Intersection(Obj):
+    def __init__(self,objectList):
+        self.objectList = objectList
+        self.objectNormale = 0
+        self.color = 0
+        self.transparency = 255
+
+    def intersection(self,rayon):
+        roots = None
+        r=0
+        g=0
+        b=0
+        accumulateTransparency = 0
+        accumulateCount = 0 # contient après exécution le nombre de fois où des composantes ont été additionner
+
+        for x in range(len(self.objectList)):
+            currentObject = self.objectList[x]
+            currentRoots = currentObject.intersection(rayon)
+            if currentRoots != None:
+                roots = currentRoots
+                self.objectNormale = currentObject
+                (cr,cg,cb)=currentObject.color 
+                r+= cr
+                g+= cg
+                b+= cb
+                accumulateTransparency+=currentObject.transparency
+                accumulateCount+= 1
+            else :
+                return None
+
+        if(accumulateCount>0):
+            self.color = (r/accumulateCount,g/accumulateCount,b/accumulateCount)
+            self.transparency = accumulateTransparency/accumulateCount
+
+        return roots
+
+    def normale(self,tup):
+        return self.objectNormale.normale(tup)
+
+class Difference(Obj):
+    def __init__(self,objectList):
+        self.mainObject = objectList[0]
+        self.objectList = objectList
+        self.objectNormale = 0
+        self.color = self.mainObject.color
+        self.transparency = self.mainObject.transparency    
+
+    def intersection(self,rayon):
+        mainObjectRoots = self.mainObject.intersection(rayon)
+        if mainObjectRoots != None : 
+            for x in range(len(self.objectList)):
+                if(x>0): # a changer, trouver comment retirer le premier élément
+                    currentObject = self.objectList[x]
+                    currentRoots = currentObject.intersection(rayon)
+                    if currentRoots != None:
+                        return None
+
+            return mainObjectRoots
+        else:
+            return None
+
+    def normale(self,tup):
+        return self.mainObject.normale(tup)
 
 def pscal3(tup1, tup2):
     (x1,y1,z1) = tup1
@@ -308,7 +370,7 @@ roman = Prim( roman(), (255,200, 255),255)
 
 camera.nom="union.png"
 #raycastingUnion(camera,tore,boule)
-u = Union((tore,boule,roman))
+u = Union((Intersection((tore,boule)),Difference((tore,boule))))
 raycasting(camera,u)
 
 camera.nom="intersection.png"
