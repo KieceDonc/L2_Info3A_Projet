@@ -55,12 +55,14 @@ class Camera( object):
     def topolent(self,e):
         return e.topolent()
 
+racines_precision = 1e-9
+
 class Prim(Obj):
-    def __init__(self, fonc_xyz, color,transparency):
+    def __init__(self, fonc_xyz, color, transparency):
         self.fonc=fonc_xyz
         self.color=color
         if transparency == None : 
-            self.transparency = 0
+            self.transparency = 255
         else : 
             self.transparency = int(transparency)
 
@@ -70,7 +72,7 @@ class Prim(Obj):
         "z": Nb(rayon.source[2]) + Nb(rayon.dir[2])*Var("t")}
         expression_en_t=self.fonc.evalsymb(dico)
         pol_t = topolent(expression_en_t)
-        return racines(1e-9,pol_t)
+        return racines(racines_precision,pol_t)
 
     def normale(self, tup):
         (x,y,z) = tup
@@ -80,6 +82,45 @@ class Prim(Obj):
         dico={"x":x, "y":y, "z":z}
         (a,b,c)= (fx.eval(dico), fy.eval(dico), fz.eval(dico))
         return normalize3((a, b, c))
+
+class Union(Obj):
+    def __init__(self,objectList):
+        if(len(objectList)<2):
+            print("Union erreur, au moins 2 objets doivent être transmis en paramètres pour une union")
+        self.objectList = objectList
+        self.objectNormale = 0
+        self.color = 0
+        self.transparency = 255
+
+    def intersection(self,rayon):
+        roots = None
+        r=0
+        g=0
+        b=0
+        accumulateTransparency = 0
+        accumulateCount = 0 # contient après exécution le nombre de fois où des composantes ont été additionner
+
+        for x in range(len(self.objectList)):
+            currentObject = self.objectList[x]
+            currentRoots = currentObject.intersection(rayon)
+            if currentRoots != None:
+                roots = currentRoots
+                self.objectNormale = currentObject
+                (cr,cg,cb)=currentObject.color 
+                r+= cr
+                g+= cg
+                b+= cb
+                accumulateTransparency+=currentObject.transparency
+                accumulateCount+= 1
+
+        if(accumulateCount>0):
+            self.color = (r/accumulateCount,g/accumulateCount,b/accumulateCount)
+            self.transparency = accumulateTransparency/accumulateCount
+
+        return roots
+
+    def normale(self,tup):
+        return self.objectNormale.normale(tup)
 
 def pscal3(tup1, tup2):
     (x1,y1,z1) = tup1
@@ -104,7 +145,7 @@ def raycasting(cam, objet):
                 rayon.source[1]+ t*rayon.dir[1],
                 rayon.source[2]+ t*rayon.dir[2])
                 (a,b,c)=normalize3(objet.normale(pt))
-                transparency = objet.transparency
+                transparency = int(objet.transparency)
                 (rr,vv,bb)=objet.color
                 (rr,vv,bb)= (float(rr), float(vv), float(bb))
                 ps=pscal3((a,b,c), cam.soleil)
@@ -213,63 +254,6 @@ def raycastingDifference(cam,object0,object1):
                 (r,v,b,transparency))
         img.show()
         img.save( cam.nom)
-
-def raycastingUnion(cam,object0,object1):
-    if(object0==None or object1==None):
-        print("raycasting erreur : un paramètre est null")
-    else:  
-        img=Image.new("RGBA", (2*cam.hsizewin+1, 2*cam.hsizewin+1), (255,255,255))
-        for xpix in range(-cam.hsizewin, cam.hsizewin+1, 1):
-            for zpix in range(-cam.hsizewin, cam.hsizewin+1, 1):
-                rayon= cam.generate_ray( xpix, zpix)
-                roots_obj0 = object0.intersection(rayon)
-                roots_obj1 = object1.intersection(rayon)
-                transparency = 255
-                if roots_obj0==None and roots_obj1==None:
-                    (r,v,b)= cam.background
-                else:
-                    objectToWorkWith = None
-                    t = 0 
-                    if roots_obj0!=None and roots_obj1 == None:
-                        (rr,vv,bb)=object0.color
-                        (rr,vv,bb)= (float(rr), float(vv), float(bb))
-                        transparency = object0.transparency
-                        objectToWorkWith = object0
-                        t = hd(roots_obj0)
-                    elif roots_obj1!=None and roots_obj0 == None:
-                        (rr,vv,bb)=object1.color
-                        (rr,vv,bb)= (float(rr), float(vv), float(bb))      
-                        transparency = object1.transparency
-                        objectToWorkWith = object1          
-                        t = hd(roots_obj1)
-                    else:
-                        (rr0,vv0,bb0)=object0.color
-                        (rr0,vv0,bb0)= (float(rr0), float(vv0), float(bb0))
-                        (rr1,vv1,bb1)=object1.color
-                        (rr1,vv1,bb1)= (float(rr1), float(vv1), float(bb1))
-                        (rr,vv,bb)= ((rr0+rr1)/2, (vv0+vv1)/2, (bb0+bb1)/2)
-                        transparency = int((object0.transparency + object1.transparency)/2)
-                        objectToWorkWith = object0
-                        t = hd(roots_obj0)
-                    pt=(xo,yo,zo)= (rayon.source[0]+ t*rayon.dir[0],
-                    rayon.source[1]+ t*rayon.dir[1],
-                    rayon.source[2]+ t*rayon.dir[2])
-                    (a,b,c)=normalize3(objectToWorkWith.normale(pt))
-                    ps=pscal3((a,b,c), cam.soleil)
-                    if ps < -1. or 1 < ps:
-                        print("PS="+str(ps))
-                        ps = clamp( -1., 1., ps)
-                    coef= interpole( -1., 0.5, 1., 1., ps)
-                    r=coef*rr
-                    v=coef*vv
-                    b=coef*bb
-                    (r,v,b) = (int(r), int(v), int(b))
-                img.putpixel(
-                (xpix+cam.hsizewin,
-                2*cam.hsizewin-(zpix+cam.hsizewin)),
-                (r,v,b,transparency))
-        img.show()
-        img.save( cam.nom)
         
 camera=Camera( oeil, droite, regard, vertical, 1.5, 100, normalize3((0., -1., 2.)))
 def boule(tup1, r):
@@ -320,9 +304,12 @@ def roman():
 
 tore = Prim(tore(0.45, 1.), (0,0, 255),200)
 boule = Prim(boule( (0., 2., -0.5), 1.), (255,0, 0), 150)
+roman = Prim( roman(), (255,200, 255),255)
 
 camera.nom="union.png"
-raycastingUnion(camera,tore,boule)
+#raycastingUnion(camera,tore,boule)
+u = Union((tore,boule,roman))
+raycasting(camera,u)
 
 camera.nom="intersection.png"
 raycastingIntersection(camera,tore,boule)
