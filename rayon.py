@@ -3,7 +3,10 @@ import random
 import os
 import sys
 from bernstein import *
+from primitives import * 
+
 from PIL import Image, ImageDraw, ImageFont
+
 def interpole( x1, y1, x2, y2, x) :
     # x=x1 -> y=y1
     # x=x2 -> y=y2
@@ -22,9 +25,6 @@ def normalize3(tup):
 def topolent(e):
     return e.topolent()
 
-class Obj(object):
-    def __init__(self):
-        " "
 
 class Rayon( object):
     def __init__(self, source, dir):
@@ -56,6 +56,10 @@ class Camera( object):
         return e.topolent()
 
 racines_precision = 1e-9
+
+class Obj(object):
+    def __init__(self):
+        " "
 
 class Prim(Obj):
     def __init__(self, fonc_xyz, color, transparency):
@@ -226,67 +230,33 @@ def raycasting(cam, objet):
     img.show()
     img.save( cam.nom)
 
-oeil=(0.001,-4.,0.003)
+
+vec = 10
+oeil=(1,-4,0)
 droite= (1.,0.,0.)
-regard= (0.,1.,0.)
-vertical=(0.,0.,1.)
+regard= (0,1.,0.)
+vertical=(0.,0.,1)
 #le repere local est tel que regard=oy, vertical=oz, droite=ox, o=oeil
 
 camera=Camera( oeil, droite, regard, vertical, 1.5, 100, normalize3((0., -1., 2.)))
-def boule(tup1, r):
-    (cx,cy,cz) = tup1
-    x=Var("x")
-    y=Var("y")
-    z=Var("z")
-    return (x-Nb(cx))*(x-Nb(cx)) + (y-Nb(cy))*(y-Nb(cy)) + (z-Nb(cz))*(z-Nb(cz)) - Nb(r*r)
-    
-def tore( r, R):
-    x=Var("x")
-    y=Var("y")
-    z=Var("z")
-    tmp=x*x+y*y+z*z+Nb(R*R-r*r)
-    return tmp*tmp- Nb(4.*R*R)*(x*x+z*z)
 
-def steiner2():
-    x=Var("x")
-    y=Var("y")
-    z=Var("z")
-    return (x * x * y * y - x * x * z * z + y * y * z * z - x * y * z)
+'''
+def test_zitrus():
+    oeil=(0,-2,0)
+    camera=Camera( oeil, droite, regard, vertical, 0.5, 100, normalize3((0., -1., 2.)))
+    camera.nom="zitrus.png"
+    raycasting(camera,zitrus)
 
-def steiner4():
-    x=Var("x")
-    y=Var("y")
-    z=Var("z")
-    return y * y - Nb( 2.) * x * y * y - x * z * z + x * x * y * y + x * x * z * z - z * z * z * z
+camera.nom="miau.png"
+raycasting(camera,miau)
 
-def hyperboloide_2nappes():
-    x=Var("x")
-    y=Var("y")
-    z=Var("z")
-    return Nb(0.) - (z * z - (x * x + y * y + Nb(0.1)))
+camera.nom="solitude.png"
+raycasting(camera,solitude)
 
-def hyperboloide_1nappe():
-    x=Var("x")
-    y=Var("y")
-    z=Var("z")
-    return Nb(0.)-(z * z - (x * x + y * y - Nb(0.1)))
-
-def roman():
-    x=Var("x")
-    y=Var("y")
-    z=Var("z")
-    return ( x * x * y * y + x * x * z * z + y * y * z * z - Nb(2.) * x * y * z)
-
-
-
-tore = Prim(tore(0.45, 1.), (0,0, 255),200)
-boule = Prim(boule( (0., 2., -0.5), 1.), (255,0, 0), 150)
-roman = Prim( roman(), (255,200, 255),255)
-
-camera.nom="union.png"
-#raycastingUnion(camera,tore,boule)
+camera.nom="union-intersection-difference.png"
 u = Union((Intersection((tore,boule)),Difference((tore,boule))))
 raycasting(camera,u)
+
 
 camera.nom="intersection.png"
 raycastingIntersection(camera,tore,boule)
@@ -294,7 +264,7 @@ raycastingIntersection(camera,tore,boule)
 camera.nom="difference.png"
 raycastingDifference(camera,tore,boule)
 
-'''
+
 camera.nom="boule.png"
 raycasting(camera,boule)
 
