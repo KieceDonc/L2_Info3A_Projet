@@ -2,6 +2,7 @@
 
 from rayon import *
 import math
+from multiprocessing import Process
 pi = 4. * math.atan(1.)
 #math.pi
 
@@ -34,7 +35,8 @@ def anim( cam, obj, nb, nom):
 		cam2 = Camera( o2, ox2, oy2, oz2, cam.hsizeworld, cam.hsizewin, cam.soleil)
 		nom2 = nom + string_of_int( i, 10)
 		cam2.nom = nom2+'.png'
-		raycasting( cam2, obj)
+		Process(target=raycasting,args=(cam2, obj)).start()
+		#raycasting( cam2, obj)
 
 #https://imaginary.org/fr/node/2221
 
@@ -66,4 +68,4 @@ def miau_anim():
 	camera.nom="IMG/miau"
 	anim( camera, miau, 20, "miau/miau")
 
-miau_anim()
+zitrus_anim()
