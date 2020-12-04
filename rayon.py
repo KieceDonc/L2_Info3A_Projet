@@ -25,7 +25,6 @@ def normalize3(tup):
 def topolent(e):
     return e.topolent()
 
-
 class Rayon( object):
     def __init__(self, source, dir):
         self.source=source
@@ -55,7 +54,7 @@ class Camera( object):
     def topolent(self,e):
         return e.topolent()
 
-racines_precision = 1e-9
+racines_precision = 1e-8
 
 class Obj(object):
     def __init__(self):
@@ -227,9 +226,7 @@ def raycasting(cam, objet):
             (xpix+cam.hsizewin,
             2*cam.hsizewin-(zpix+cam.hsizewin)),
             (r,v,b,transparency))
-    img.show()
-    img.save( cam.nom)
-
+    img.save(cam.nom)
 
 vec = 10
 oeil=(1,-4,0)
@@ -241,30 +238,6 @@ vertical=(0.,0.,1)
 camera=Camera( oeil, droite, regard, vertical, 1.5, 100, normalize3((0., -1., 2.)))
 
 '''
-def test_zitrus():
-    oeil=(0,-2,0)
-    camera=Camera( oeil, droite, regard, vertical, 0.5, 100, normalize3((0., -1., 2.)))
-    camera.nom="zitrus.png"
-    raycasting(camera,zitrus)
-
-camera.nom="miau.png"
-raycasting(camera,miau)
-
-camera.nom="solitude.png"
-raycasting(camera,solitude)
-
-camera.nom="union-intersection-difference.png"
-u = Union((Intersection((tore,boule)),Difference((tore,boule))))
-raycasting(camera,u)
-
-
-camera.nom="intersection.png"
-raycastingIntersection(camera,tore,boule)
-
-camera.nom="difference.png"
-raycastingDifference(camera,tore,boule)
-
-
 camera.nom="boule.png"
 raycasting(camera,boule)
 
