@@ -7,270 +7,253 @@ from primitives import *
 
 from PIL import Image, ImageDraw, ImageFont
 
-def interpole( x1, y1, x2, y2, x) :
-    # x=x1 -> y=y1
-    # x=x2 -> y=y2
-    x1, y1, x2, y2, x= float(x1), float(y1), float( x2), float(y2), float(x)
-    return (x-x2)/(x1-x2)*y1 + (x-x1)/(x2-x1)*y2
+class Rayon(object):
+	def __init__(self, source, dir):
+		self.source=source
+		self.dir=dir
 
-def normalize3(tup):
-    (a, b, c) = tup
-    (a,b,c)=(float(a),float(b),float(c))
-    n=math.sqrt(a*a+b*b+c*c)
-    if 0.==n:
-        return (0.,0.,0.)
-    else:
-        return (a/n, b/n, c/n)
+#Contact decrit un point d'intersection entre un rayon et un solide:
+# il y a le t,  un pt: (x,y,z), un plan: (a,b,c,d), une couleur : int
 
-def topolent(e):
-    return e.topolent()
+class Contact(object):
+	def __init__( self, t, pt, plan, color):
+		self.t = t
+		self.pt = pt
+		self.plan = plan
+		self.color = color
 
-class Rayon( object):
-    def __init__(self, source, dir):
-        self.source=source
-        self.dir=dir
+#trf est une Trfo, contact est un Contact
+def transform_contact(trf, contact) :
+	if is_num( contact):
+		print('a nombre dans transform_contact=' + str( contact))
+		return 1/0
+	t_pt = vec2xyz(mat_vec(trf.direct, xyz2vec( contact.pt)))
+	t_plan= vec2abcd(vec_mat(contact.plan, trf.inverse))
+	return Contact(contact.t, t_pt, t_plan, contact.color)
 
-class Camera( object):
-    def __init__(self, o, ox, oy, oz, hsizeworld, hsizewin, soleil):
-        self.o=o
-        self.ox= ox #vers la droite du spectateur
-        self.oy= oy #regard du spectateur
-        self.oz= oz #vertical du spectateur
-        self.hsizeworld=hsizeworld
-        self.hsizewin=hsizewin
-        self.soleil = normalize3(soleil)
-        self.background=(100,100, 255)
-        self.nom= "img.png"
+class Camera(object):
 
-    def generate_ray(self, x, z):
-        (x0, y0, z0)= self.o
-        kx = interpole( 0., 0., self.hsizewin, self.hsizeworld, float(x))
-        kz = interpole( 0., 0., self.hsizewin, self.hsizeworld, float(z))
-        return Rayon( (x0 + kx*self.ox[0] + kz*self.oz[0],
-        y0 + kx*self.ox[1] + kz*self.oz[1],
-        z0 + kx*self.ox[2] + kz*self.oz[2]),
-        self.oy)
+	def __init__(self, o, ox, oy, oz, hsizeworld, hsizewin, soleil):
+		self.o=o
+		self.ox= ox #vers la droite du spectateur
+		self.oy= oy #regard du spectateur
+		self.oz= oz #vertical du spectateur
+		self.hsizeworld=hsizeworld
+		self.hsizewin=hsizewin
+		self.soleil = normalize3( soleil)
+		self.background=(100,100, 255,255)
+		self.nom= "img"
 
-    def topolent(self,e):
-        return e.topolent()
+	def generate_ray(self, x, z):
+		(x0, y0, z0)= self.o
+		kx = interpole(0., 0., self.hsizewin, self.hsizeworld, float(x))
+		kz = interpole(0., 0., self.hsizewin, self.hsizeworld, float(z))
+		return Rayon((x0 + kx*self.ox[0] + kz*self.oz[0], y0 + kx*self.ox[1] + kz*self.oz[1], z0 + kx*self.ox[2] + kz*self.oz[2]), self.oy)  
+	
+def transform_ray(trf, rayon) :
+	src = rayon.source
+	dir = rayon.dir
+	t_src = vec2xyz(mat_vec(trf.direct, xyz2vec( rayon.source )))
+	t_dir = vec2abc(mat_vec(trf.direct, abc2vec( rayon.dir )))
+	return Rayon( t_src, t_dir)
 
-racines_precision = 1e-8
+def transform_cam(trf, cam):
+	o2= vec2xyz(mat_vec(trf.direct, xyz2vec(cam.o)))
+	ox2= vec2abc(mat_vec(trf.direct, abc2vec(cam.ox)))
+	oy2= vec2abc(mat_vec(trf.direct, abc2vec(cam.oy)))
+	oz2= vec2abc(mat_vec(trf.direct, abc2vec(cam.oz)))
+	return Camera(o2, ox2, oy2, oz2, cam.hsizeworld, cam.hsizewin, cam.soleil)
 
 class Obj(object):
-    def __init__(self):
-        " "
+	def __init__(self):
+		" "
 
+def transform_ray(trf, rayon) :
+	src = rayon.source
+	dir = rayon.dir
+	t_src = vec2xyz(mat_vec(trf.direct, xyz2vec(rayon.source )))
+	t_dir = vec2abc(mat_vec(trf.direct, abc2vec(rayon.dir )))
+	return Rayon(t_src, t_dir)
+
+def transform_cam(trf, cam):
+	o2= vec2xyz(mat_vec(trf.direct, xyz2vec(cam.o)))
+	ox2= vec2abc(mat_vec(trf.direct, abc2vec(cam.ox)))
+	oy2= vec2abc(mat_vec(trf.direct, abc2vec(cam.oy)))
+	oz2= vec2abc(mat_vec(trf.direct, abc2vec(cam.oz)))
+	return Camera(o2, ox2, oy2, oz2, cam.hsizeworld, cam.hsizewin, cam.soleil)
+
+def pt_sur_rayon(rayon, t) :
+	(x, y, z)= rayon.source
+	(a, b, c)= rayon.dir
+	return (x + t*a, y + t*b, z + t*c)
+	
 class Prim(Obj):
-    def __init__(self, fonc_xyz, color, transparency):
-        self.fonc=fonc_xyz
-        self.color=color
-        if transparency == None : 
-            self.transparency = 255
-        else : 
-            self.transparency = int(transparency)
+	def __init__(self, fonc_xyz, color):
+		self.fonc=fonc_xyz
+		self.color=color
 
-    def intersection(self, rayon):
-        dico = { "x": Nb(rayon.source[0]) + Nb(rayon.dir[0])*Var("t"),
-        "y": Nb(rayon.source[1]) + Nb(rayon.dir[1])*Var("t"),
-        "z": Nb(rayon.source[2]) + Nb(rayon.dir[2])*Var("t")}
-        expression_en_t=self.fonc.evalsymb(dico)
-        pol_t = topolent(expression_en_t)
-        return racines(racines_precision,pol_t)
+	def normale(self, xyz):
+		(x,y,z) = xyz
+		fx=self.fonc.derivee("x") 
+		fy=self.fonc.derivee("y") 
+		fz=self.fonc.derivee("z") 
+		dico={"x":x, "y":y, "z":z}
+		(a,b,c)= (fx.eval(dico), fy.eval(dico), fz.eval(dico))
+		return normalize3((a, b, c))
 
-    def normale(self, tup):
-        (x,y,z) = tup
-        fx=self.fonc.derivee("x")
-        fy=self.fonc.derivee("y")
-        fz=self.fonc.derivee("z")
-        dico={"x":x, "y":y, "z":z}
-        (a,b,c)= (fx.eval(dico), fy.eval(dico), fz.eval(dico))
-        return normalize3((a, b, c))
+	def creer_contact(self, rayon, t) :
+		pt=pt_sur_rayon(rayon, t)
+		abc=(a,b,c) = self.normale(pt)
+		d= 0 - pscal3(pt, abc)
+		plan= (a,b,c,d)
+		return Contact(t, pt, plan, self.color)
 
-class Union(Obj):
-    def __init__(self,objectList):
-        self.objectList = objectList
-        self.objectNormale = 0
-        self.color = 0
-        self.transparency = 255
+	def two_contacts(self, rayon, t1t2):
+			(t1, t2)= t1t2
+			return (self.creer_contact(rayon, t1), self.creer_contact(rayon, t2))
 
-    def intersection(self,rayon):
-        roots = None
-        r=0
-        g=0
-        b=0
-        accumulateTransparency = 0
-        accumulateCount = 0 # contient après exécution le nombre de fois où des composantes ont été additionner
+	def intersection(self, rayon):
+		dico = {"x": Nb(rayon.source[0]) + Nb(rayon.dir[0])*Var("t"), "y": Nb(rayon.source[1]) + Nb(rayon.dir[1])*Var("t"), "z": Nb(rayon.source[2]) + Nb(rayon.dir[2])*Var("t")}
+		expression_en_t=self.fonc.evalsymb(dico)
+		pol_t = topolent(expression_en_t) 
+		#intervalles= ... remplace: roots = racines( pol_t)
+		intervalles= inter_polca(1e-4, pol_t)
+		intervals_contacts= mymap((lambda t1t2: self.two_contacts(rayon, t1t2)), intervalles)
+		return intervals_contacts	
 
-        for x in range(len(self.objectList)):
-            currentObject = self.objectList[x]
-            currentRoots = currentObject.intersection(rayon)
-            if currentRoots != None:
-                roots = currentRoots
-                self.objectNormale = currentObject
-                (cr,cg,cb)=currentObject.color 
-                r+= cr
-                g+= cg
-                b+= cb
-                accumulateTransparency+=currentObject.transparency
-                accumulateCount+= 1
+def transform_interval(transfo, intervalle_contacts):
+	(contact1, contact2) = intervalle_contacts
+	return (transform_contact(transfo, contact1), \
+		transform_contact(transfo, contact2))
 
-        if(accumulateCount>0):
-            self.color = (r/accumulateCount,g/accumulateCount,b/accumulateCount)
-            self.transparency = accumulateTransparency/accumulateCount
 
-        return roots
+class TransfObj(Obj):
+	def __init__(self, transformation, obj):
+		self.transfo=transformation
+		self.obj=obj
 
-    def normale(self,tup):
-        return self.objectNormale.normale(tup)
+	def intersection(self, rayon):
+		rayon_aux = transform_ray(trf_inverse(self.transfo), rayon)
+		# contacts_aux est une liste de paire de contacts:
+		contacts_aux = self.obj.intersection(rayon_aux)
+		contacts = mymap((lambda ival: \
+		   transform_interval(self.transfo, ival)), contacts_aux)
+		return contacts
 
-class Intersection(Obj):
-    def __init__(self,objectList):
-        self.objectList = objectList
-        self.objectNormale = 0
-        self.color = 0
-        self.transparency = 255
+class Union(Prim):
+	def __init__(self,objectList):
+		self.objectList = objectList
 
-    def intersection(self,rayon):
-        roots = None
-        r=0
-        g=0
-        b=0
-        accumulateTransparency = 0
-        accumulateCount = 0 # contient après exécution le nombre de fois où des composantes ont été additionner
+	def intersection(self,rayon):
+		intervalles_contacts = None
+		accumulateR=0
+		accumulateG=0
+		accumulateB=0
+		accumulateT = 0
+		accumulateCount = 0 # contient après exécution le nombre de fois où des composantes ont été additionner
 
-        for x in range(len(self.objectList)):
-            currentObject = self.objectList[x]
-            currentRoots = currentObject.intersection(rayon)
-            if currentRoots != None:
-                roots = currentRoots
-                self.objectNormale = currentObject
-                (cr,cg,cb)=currentObject.color 
-                r+= cr
-                g+= cg
-                b+= cb
-                accumulateTransparency+=currentObject.transparency
-                accumulateCount+= 1
-            else :
-                return None
+		for x in range(len(self.objectList)):
+			currentObject = self.objectList[x]
+			currentIntervals_contacts = currentObject.intersection(rayon)
+			if currentIntervals_contacts != None:
+				intervalles_contacts = currentIntervals_contacts
+				(cr,cg,cb,ct)= currentObject.color 
+				accumulateB+= cr
+				accumulateR+= cg
+				accumulateG+= cb
+				accumulateT+= ct
+				accumulateCount+= 1
 
-        if(accumulateCount>0):
-            self.color = (r/accumulateCount,g/accumulateCount,b/accumulateCount)
-            self.transparency = accumulateTransparency/accumulateCount
+		if(accumulateCount>0):
+			self.color = (accumulateB/accumulateCount,accumulateG/accumulateCount,accumulateB/accumulateCount,accumulateT/accumulateCount)
 
-        return roots
+		return intervalles_contacts
 
-    def normale(self,tup):
-        return self.objectNormale.normale(tup)
+class Intersection(Prim):
+	def __init__(self,objectList):
+		self.objectList = objectList
+		self.fonc=objectList[0].fonc
 
-class Difference(Obj):
-    def __init__(self,objectList):
-        self.mainObject = objectList[0]
-        self.objectList = objectList
-        self.objectNormale = 0
-        self.color = self.mainObject.color
-        self.transparency = self.mainObject.transparency    
+	def intersection(self, rayon):
+		intervalles_contacts = None
+		accumulateR = 0
+		accumulateG = 0
+		accumulateB = 0
+		accumulateT = 0
+		accumulateCount = 0 # contient après exécution le nombre de fois où des composantes ont été additionner
 
-    def intersection(self,rayon):
-        mainObjectRoots = self.mainObject.intersection(rayon)
-        if mainObjectRoots != None : 
-            for x in range(len(self.objectList)):
-                if(x>0): # a changer, trouver comment retirer le premier élément
-                    currentObject = self.objectList[x]
-                    currentRoots = currentObject.intersection(rayon)
-                    if currentRoots != None:
-                        return None
+		for x in range(len(self.objectList)):
+			currentObject = self.objectList[x]
+			currentIntervals_contacts = currentObject.intersection(rayon)
+			if currentIntervals_contacts != None:
+				intervalles_contacts = currentIntervals_contacts
+				(cr,cg,cb,ct)=currentObject.color 
+				accumulateR+= cr
+				accumulateG+= cg
+				accumulateB+= cb
+				accumulateT+= ct
+				accumulateCount+= 1
+			else :
+				return None
 
-            return mainObjectRoots
-        else:
-            return None
+		if(accumulateCount>0):
+			self.color = (accumulateR/accumulateCount,accumulateG/accumulateCount,accumulateB/accumulateCount,accumulateT/accumulateCount)
 
-    def normale(self,tup):
-        return self.mainObject.normale(tup)
+		return intervalles_contacts	
 
-def pscal3(tup1, tup2):
-    (x1,y1,z1) = tup1
-    (x2,y2,z2) = tup2
-    return x1*x2 + y1*y2 + z1*z2
+class Difference(Prim):
+	def __init__(self,objectList):
+		self.objectList = objectList
+		self.fonc=objectList[0].fonc
+		self.color=objectList[0].color
 
-def clamp(mi, ma, v):
-    return min(ma, max( mi, v))
+	def intersection(self,rayon):
+		mainObject = self.objectList[0]
+		intervalles_contacts = mainObject.intersection(rayon)
 
-def raycasting(cam, objet):
-    img=Image.new("RGBA", (2*cam.hsizewin+1, 2*cam.hsizewin+1), (255,255,255,255))
-    for xpix in range(-cam.hsizewin, cam.hsizewin+1, 1):
-        for zpix in range(-cam.hsizewin, cam.hsizewin+1, 1):
-            rayon= cam.generate_ray(xpix, zpix)
-            roots=objet.intersection(rayon)
-            transparency = 255
-            if None==roots:
-                (r,v,b)= cam.background
-            else:
-                t= hd(roots) # roots[0] #c'est le 1er element (un t) de la pire (tete, queue)
-                pt=(xo,yo,zo)= (rayon.source[0]+ t*rayon.dir[0],
-                rayon.source[1]+ t*rayon.dir[1],
-                rayon.source[2]+ t*rayon.dir[2])
-                (a,b,c)=normalize3(objet.normale(pt))
-                transparency = int(objet.transparency)
-                (rr,vv,bb)=objet.color
-                (rr,vv,bb)= (float(rr), float(vv), float(bb))
-                ps=pscal3((a,b,c), cam.soleil)
-                if ps < -1. or 1 < ps:
-                    print("PS="+str(ps))
-                    ps = clamp(-1., 1., ps)
-                coef= interpole(-1., 0.5, 1., 1., ps)
-                r=coef*rr
-                v=coef*vv
-                b=coef*bb
-                (r,v,b) = (int(r), int(v), int(b))
-            img.putpixel(
-            (xpix+cam.hsizewin,
-            2*cam.hsizewin-(zpix+cam.hsizewin)),
-            (r,v,b,transparency))
-    img.save(cam.nom)
+		if intervalles_contacts != None : 
+			for x in range(len(self.objectList)):
+				if(x>0): # a changer, trouver comment retirer le premier élément
+					currentObject = self.objectList[x]
+					currentIntervals_contacts = currentObject.intersection(rayon)
+					if currentIntervals_contacts != None:
+						return None
 
-vec = 10
-oeil=(1,-4,0)
-droite= (1.,0.,0.)
-regard= (0,1.,0.)
-vertical=(0.,0.,1)
-#le repere local est tel que regard=oy, vertical=oz, droite=ox, o=oeil
+			return intervalles_contacts
+		else:
+			return None
 
-camera=Camera( oeil, droite, regard, vertical, 1.5, 100, normalize3((0., -1., 2.)))
+# calcule la couleur du contact, en attenuant la color du contact en fonction
+# de l'angle avec le soleil dans la camera cam
+def rendering(cam, contact):
+	if 1.0 == contact.t :
+		#l'oeil est "dans la matiere", à l'intérieur d'une primitive
+		(r,v,b,t)=contact.color
+		return (r//2, v//2, b//2,t)
+	(rr,vv,bb,tt)= contact.color
+	(rr,vv,bb,tt)= (float(rr), float(vv), float(bb),float(tt))
+	(a,b,c,d) = contact.plan
+# avec les soustractions, il peut arriver que le plan soit mal orienté, ie la normale ne pointe pas vers l'extérieur de l'objet
+# si le point du contact est vu, alors pscal3( sa normale, cam.oy)<= 0  
+	if pscal3(cam.oy, (a,b,c)) > 0. :
+		(a,b,c,d) = (-a, -b, -c, -d)
+	ps= pscal3((a,b,c), cam.soleil)
+	ps = clamp(-1., 1., ps)
+	coef= interpole(-1., 0.5, 1., 1., ps)
+	return (int(coef*rr), int(coef*vv), int(coef*bb),int(tt))
 
-'''
-camera.nom="boule.png"
-raycasting(camera,boule)
-
-camera.nom="tore.png"
-raycasting(camera,tore)
-
-camera.nom="boule.png"
-raycasting(camera, Prim( boule( (0., 2., -0.5), 1.), ((255,255,255))))
-
-camera.nom="tore.png"
-raycasting(camera, Prim( tore(0.45, 1.), (255,200, 255)))
-
-camera.hsizeworld=10.
-camera.nom="steiner2.png"
-raycasting( camera, Prim( steiner2(), (255,200, 255)))
-
-camera.hsizeworld=1.5
-camera.nom="roman.png"
-raycasting( camera, Prim( roman(), (255,200, 255)))
-
-camera.nom="hyper1.png"
-raycasting( camera, Prim( hyperboloide_1nappe(), (255,200, 255)))
-
-camera.nom="hyper2.png"
-raycasting( camera, Prim( hyperboloide_2nappes(), (255,200, 255)))
-
-camera.nom="steiner4.png"
-raycasting( camera, Prim( steiner4(), (255,200, 255)))
-'''
-
-'''
-
-https://fr.wikipedia.org/wiki/Th%C3%A9or%C3%A8me_de_Sturm
-https://fr.wikipedia.org/wiki/Algorithme_de_recherche_d%27un_z%C3%A9ro_d%27une_fonction
-
-'''
+def raycasting( cam, objet):
+	img=Image.new("RGBA", (2*cam.hsizewin+1, 2*cam.hsizewin+1), (255,255,255))
+	for xpix in range(-cam.hsizewin, cam.hsizewin+1, 1):
+		for zpix in range(-cam.hsizewin, cam.hsizewin+1, 1):
+			rayon= cam.generate_ray(xpix, zpix)
+			contacts = objet.intersection(rayon)
+			if None==contacts:
+				(r,v,b,t)= cam.background
+			else:
+				(contact1, contact2)=  hd(contacts) 
+				if is_num(contact1):
+					print('contact1 = nb '+str(contact1))
+				(r, v, b, t) = rendering(cam, contact1) 
+			img.putpixel((xpix+cam.hsizewin, 2*cam.hsizewin-(zpix+cam.hsizewin)), (r,v,b,t))
+	img.save(cam.nom + '.png')

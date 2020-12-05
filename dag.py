@@ -83,23 +83,24 @@ class Nb(M):
 class Var(M):
 	def __init__(self, nom):
 		self.nom=nom
-	def eval( self, dico):
+	def eval(self, dico):
 		if self.nom in dico :   # if dico.has_key( self.nom )
-			return dico[ self.nom ]
+			return dico[self.nom]
 		else :
-			print( 'erreur dans Var.eval: indefini :' + self.nom )
+			print('erreur dans Var.eval: indefini :' + self.nom)
 			return 1 / 0
 	def evalsymb(self, dico):
 		if self.nom in dico :   # if dico.has_key( self.nom )
-			return dico[ self.nom ]
+			return dico[self.nom]
 		else :
 			return self	
-	def topolent( self) :
+	def topolent(self) :
 		if self.nom == 't' :
-					return [ 0, 1] 
+			return [ 0, 1] 
 		else :
-			print( 'erreur dans Var.topolent: pas t mais ' + self.nom)
-	def derivee( self, name) :
+			print('erreur dans Var.topolent: pas t mais ' + self.nom)
+
+	def derivee(self, name) :
 		if name==self.nom :
 			return Nb( 1.)
 		else:

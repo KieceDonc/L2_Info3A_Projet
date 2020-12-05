@@ -44,19 +44,22 @@ def anim(cam, obj, nb, nom):
 		oz2 = rotaz( cam.oz, theta)		
 		cam2 = Camera( o2, ox2, oy2, oz2, cam.hsizeworld, cam.hsizewin, cam.soleil)
 		nom2 = nom + string_of_int( i, 10)
-		cam2.nom = nom2+'.png'
+		cam2.nom = nom2
 		processes.append(Process(target=raycasting,args=(cam2, obj),name="generate_"+folder_name+"0"))
 	
-	count = 0
+	countStart = 0
 	for p in processes: # on démarre le calcul de toutes les images
-		print(folder_name+"start"+str(count))
-		count+=1
 		p.start()
-	count2 = 0
+		print(folder_name+" start img"+str(countStart))
+		countStart+=1
+
+	countEnd = 0
 	for p in processes: # attend que toutes les images soient généré
-		print(folder_name+"join"+str(count2))
-		count2+=1
 		p.join()
+		print(folder_name+" end img"+str(countEnd))
+		countEnd+=1
+
+
 
 	t1 = time.time() - t0 # calcul le temps passer pour la génération des images
 	print(folder_name+" imgs were generated in "+str(t1)+" s")
@@ -72,17 +75,17 @@ def anim(cam, obj, nb, nom):
 
 #https://imaginary.org/fr/node/2221
 
-tore = Prim(tore(0.45, 1.), (0,0, 255),200)
-zitrus = Prim(zitrus(),(255,200,255),255)
-boule = Prim(boule( (0., 2., -0.5), 1.), (255,0, 0), 150)
-roman = Prim(roman(), (255,200, 255),255)
-solitude = Prim(solitude(),(255,200,255),255)
-miau = Prim(miau(),(255,200,255),255)
-steiner2 = Prim(steiner2(),(255,255,255),255)
-steiner4 = Prim(steiner4(),(255,255,255),255)
-hyperboloide_2nappes = Prim(hyperboloide_2nappes(),(255,255,255),255)
-hyperboloide_1nappe = Prim(hyperboloide_1nappe(),(255,255,255),255)
-bool_op = Union((Intersection((tore,boule)),Difference((tore,boule)))) # heavy 
+tore = Prim(tore(0.45, 1.), (0,0,255,200))
+zitrus = Prim(zitrus(),(255,200,255,255))
+boule = Prim(boule((0., 2., -0.5), 1.), (255,0, 0,150))
+roman = Prim(roman(), (255, 200, 255, 255))
+solitude = Prim(solitude(),(255,200,255,255))
+miau = Prim(miau(),(255,200,255,255))
+steiner2 = Prim(steiner2(),(255,255,255,255))
+steiner4 = Prim(steiner4(),(255,255,255,255))
+hyperboloide_2nappes = Prim(hyperboloide_2nappes(),(255,255,255,255))
+hyperboloide_1nappe = Prim(hyperboloide_1nappe(),(255,255,255,255))
+csg_op = Union((Intersection((tore,boule)),Difference((tore,boule)))) # heavy 
 
 def tore_anim():
 	object_name = "tore"
@@ -157,23 +160,30 @@ def hyperboloide_1nappes():
 	camera=Camera(oeil, droite, regard, vertical, 5, 100, normalize3((0., -1., 2.)))
 	anim(camera, hyperboloide_1nappes, 20, object_name+"/"+object_name)
 
-def bool_op_anim():
-	object_name = "bool_op"
+def csg_op_anim():
+	object_name = "csg_op"
 	oeil=(-0,-4,0)
 	droite=  (1.,0.,0.)
 	regard=  (0.,1.,0.)
 	vertical=(0.,0.,1.)
 	camera=Camera(oeil, droite, regard, vertical, 1.5, 100, normalize3((0., -1., 2.)))
-	anim(camera, bool_op, 20, object_name+"/"+object_name)
+	anim(camera, csg_op, 20, object_name+"/"+object_name)
 
 if __name__ == '__main__':
-	'''tore_anim()
+	
+	'''
+	tore_anim()
 	zitrus_anim()
 	solitude_anim()
 	miau_anim()
 	#steiner2_anim()
 	#steiner4_anim()
-	'''
 	hyperboloide_2nappes()
 	hyperboloide_1nappes()
-	bool_op_anim()
+	csg_op_anim()
+	'''
+	steiner2_anim()
+	steiner4_anim()
+	miau_anim()
+	solitude_anim()
+	
