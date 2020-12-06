@@ -59,8 +59,6 @@ def anim(cam, obj, nb, nom):
 		print(folder_name+" end img"+str(countEnd))
 		countEnd+=1
 
-
-
 	t1 = time.time() - t0 # calcul le temps passer pour la génération des images
 	print(folder_name+" imgs were generated in "+str(t1)+" s")
 
@@ -68,8 +66,9 @@ def anim(cam, obj, nb, nom):
 	for f in glob.iglob('./'+folder_name+'/*.png'):
 		frames.append(Image.open(f))
 
-	gif=Image.new("RGBA", (2*cam.hsizewin+1, 2*cam.hsizewin+1), (255,255,255,255)) # on crée le gif
-	gif.save('./'+folder_name+'/animation.gif', format='GIF', append_images=frames, save_all=True, duration=100, loop=0)
+	first_image = frames[0]
+	del frames[0] # on retire la première image car pillow va crée le gif à partir de la première image + toutes celles donner dans frames. On doit donc retirer la première
+	gif=first_image.save('./'+folder_name+'/animation.gif', format='GIF', append_images=frames, save_all=True, duration=100, loop=0) # on crée le gif
 	print("gif generated")
 	
 
@@ -95,6 +94,15 @@ def tore_anim():
 	vertical=(0.,0.,1.)
 	camera=Camera(oeil, droite, regard, vertical, 1.5, 100, normalize3((0., -1., 2.)))
 	anim(camera, tore, 20, object_name+"/"+object_name)
+
+def roman_anim():
+	object_name = "roman"
+	oeil=(-0,-4,0)
+	droite=  (1.,0.,0.)
+	regard=  (0.,1.,0.)
+	vertical=(0.,0.,1.)
+	camera=Camera(oeil, droite, regard, vertical, 1.5, 100, normalize3((0., -1., 2.)))
+	anim(camera, roman, 20, object_name+"/"+object_name)
 
 def zitrus_anim():
 	object_name = "zitrus"
@@ -170,20 +178,24 @@ def csg_op_anim():
 	anim(camera, csg_op, 20, object_name+"/"+object_name)
 
 if __name__ == '__main__':
-	
+	zitrus_anim()
 	'''
+	roman_anim()
 	tore_anim()
 	zitrus_anim()
 	solitude_anim()
 	miau_anim()
-	#steiner2_anim()
-	#steiner4_anim()
+	steiner2_anim()
+	steiner4_anim()
 	hyperboloide_2nappes()
 	hyperboloide_1nappes()
 	csg_op_anim()
+	'''
 	'''
 	steiner2_anim()
 	steiner4_anim()
 	miau_anim()
 	solitude_anim()
+	'''
+	#zitrus_anim()
 	

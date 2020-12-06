@@ -1,6 +1,7 @@
 import math
 import random
 import os
+import glob
 import sys
 from bernstein import *
 from primitives import * 
@@ -126,7 +127,6 @@ def transform_interval(transfo, intervalle_contacts):
 	return (transform_contact(transfo, contact1), \
 		transform_contact(transfo, contact2))
 
-
 class TransfObj(Obj):
 	def __init__(self, transformation, obj):
 		self.transfo=transformation
@@ -240,20 +240,62 @@ def rendering(cam, contact):
 	ps= pscal3((a,b,c), cam.soleil)
 	ps = clamp(-1., 1., ps)
 	coef= interpole(-1., 0.5, 1., 1., ps)
+	(rr,vv,bb,tt)=calcObjectColor(contact.pt)
 	return (int(coef*rr), int(coef*vv), int(coef*bb),int(tt))
 
-def raycasting( cam, objet):
+def raycasting(cam, objet):
+	backgroundImg = getBackgroundImg(cam)
 	img=Image.new("RGBA", (2*cam.hsizewin+1, 2*cam.hsizewin+1), (255,255,255))
 	for xpix in range(-cam.hsizewin, cam.hsizewin+1, 1):
 		for zpix in range(-cam.hsizewin, cam.hsizewin+1, 1):
 			rayon= cam.generate_ray(xpix, zpix)
 			contacts = objet.intersection(rayon)
 			if None==contacts:
-				(r,v,b,t)= cam.background
+				if(backgroundImg!=None):
+					bx = xpix + cam.hsizewin
+					by = 2*cam.hsizewin-(zpix + cam.hsizewin)
+					ir, ig, ib = backgroundImg.getpixel((bx, by))
+					(r,v,b,t) = (ir,ig,ib,255)
+				else:
+					(r,v,b,t)= cam.background
 			else:
 				(contact1, contact2)=  hd(contacts) 
 				if is_num(contact1):
 					print('contact1 = nb '+str(contact1))
+				bx = xpix + cam.hsizewin
+				by = 2*cam.hsizewin-(zpix + cam.hsizewin)
 				(r, v, b, t) = rendering(cam, contact1) 
 			img.putpixel((xpix+cam.hsizewin, 2*cam.hsizewin-(zpix+cam.hsizewin)), (r,v,b,t))
 	img.save(cam.nom + '.png')
+
+def getBackgroundImg(cam):
+	filesPath = glob.glob('./background/*.*')
+	for filePath in filesPath:
+		if(filePath.endswith(('.png','.jpg','jpeg'))):
+			backgroundImg = Image.open(filePath)
+			backgroundImg = backgroundImg.resize((2*cam.hsizewin+1, 2*cam.hsizewin+1))
+			return backgroundImg
+	return None
+
+def calcObjectColor(pt):
+	size=0.25 # taille d'une case d'échiquier
+	if chessIsSquareBlack(pt,size):
+		return (0,0,0,255)
+	else:
+		return (255,255,255,255)
+
+def chessIsSquareBlack(pt,size):
+	(x,y,z) = pt
+	x = int((x+10)/size)
+	y = int((y+10)/size)
+	z = int((z+10)/size)
+	if(x%2==0):
+		if(z%2==0):
+			return y%2==0
+		else:
+			return y%2!=0
+	else:
+		if(z%2==0):
+			return y%2==0
+		else:
+			return y%2!=0
