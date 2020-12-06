@@ -61,3 +61,9 @@ def zitrus():
     y=Var("y")
     z=Var("z")
     return (x*x+z*z-y*y*y*(Nb(1)-y)*(Nb(1)-y)*(Nb(1)-y))
+
+def saturne():
+    x=Var("x")
+    y=Var("y")
+    z=Var("z")
+    return ((Nb(0.2)*x*x+Nb(0.4)*y*y+z*z+Nb(0.12))*(Nb(0.2)*x*x+Nb(0.4)*y*y+z*z+Nb(0.12))-Nb(0.5)*(Nb(0.2)*x*x+Nb(0.4)*y*y))*(Nb(0.4)*x*x+Nb(0.6)*y*y+Nb(0.6)*z*z-Nb(0.1))

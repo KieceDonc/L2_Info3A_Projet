@@ -44,6 +44,7 @@ class Camera(object):
 		self.soleil = normalize3( soleil)
 		self.background=(100,100, 255,255)
 		self.nom= "img"
+		self.renderChessBoard = False
 
 	def generate_ray(self, x, z):
 		(x0, y0, z0)= self.o
@@ -240,7 +241,10 @@ def rendering(cam, contact):
 	ps= pscal3((a,b,c), cam.soleil)
 	ps = clamp(-1., 1., ps)
 	coef= interpole(-1., 0.5, 1., 1., ps)
-	(rr,vv,bb,tt)=calcObjectColor(contact.pt)
+	if cam.renderChessBoard :
+		(rr,vv,bb,tt)=chessCalcObjectColor(contact.pt)
+	else:
+		(rr,vv,bb,tt)=contact.color
 	return (int(coef*rr), int(coef*vv), int(coef*bb),int(tt))
 
 def raycasting(cam, objet):
@@ -277,7 +281,7 @@ def getBackgroundImg(cam):
 			return backgroundImg
 	return None
 
-def calcObjectColor(pt):
+def chessCalcObjectColor(pt):
 	size=0.25 # taille d'une case d'échiquier
 	if chessIsSquareBlack(pt,size):
 		return (0,0,0,255)

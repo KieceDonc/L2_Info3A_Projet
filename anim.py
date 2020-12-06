@@ -42,7 +42,8 @@ def anim(cam, obj, nb, nom):
 		ox2 = rotaz( cam.ox, theta)		
 		oy2 = rotaz( cam.oy, theta)		
 		oz2 = rotaz( cam.oz, theta)		
-		cam2 = Camera( o2, ox2, oy2, oz2, cam.hsizeworld, cam.hsizewin, cam.soleil)
+		cam2 = Camera(o2, ox2, oy2, oz2, cam.hsizeworld, cam.hsizewin, cam.soleil)
+		cam2.renderChessBoard = cam.renderChessBoard
 		nom2 = nom + string_of_int( i, 10)
 		cam2.nom = nom2
 		processes.append(Process(target=raycasting,args=(cam2, obj),name="generate_"+folder_name+"0"))
@@ -74,17 +75,18 @@ def anim(cam, obj, nb, nom):
 
 #https://imaginary.org/fr/node/2221
 
-tore = Prim(tore(0.45, 1.), (0,0,255,200))
-zitrus = Prim(zitrus(),(255,200,255,255))
-boule = Prim(boule((0., 2., -0.5), 1.), (255,0, 0,150))
-roman = Prim(roman(), (255, 200, 255, 255))
-solitude = Prim(solitude(),(255,200,255,255))
-miau = Prim(miau(),(255,200,255,255))
-steiner2 = Prim(steiner2(),(255,255,255,255))
-steiner4 = Prim(steiner4(),(255,255,255,255))
-hyperboloide_2nappes = Prim(hyperboloide_2nappes(),(255,255,255,255))
-hyperboloide_1nappe = Prim(hyperboloide_1nappe(),(255,255,255,255))
-csg_op = Union((Intersection((tore,boule)),Difference((tore,boule)))) # heavy 
+p_tore = Prim(tore(0.45, 1.), (0,0,255,200))
+p_zitrus = Prim(zitrus(),(255,200,255,255))
+p_boule = Prim(boule((0., 2., -0.5), 1.), (255,0, 0,150))
+p_roman = Prim(roman(), (255, 200, 255, 255))
+p_solitude = Prim(solitude(),(255,200,255,255))
+p_miau = Prim(miau(),(255,200,255,255))
+p_steiner2 = Prim(steiner2(),(255,255,255,255))
+p_steiner4 = Prim(steiner4(),(255,255,255,255))
+p_hyperboloide_2nappes = Prim(hyperboloide_2nappes(),(255,255,255,255))
+p_hyperboloide_1nappes = Prim(hyperboloide_1nappe(),(255,255,255,255))
+p_csg_op = Union((Intersection((p_tore,p_boule)),Difference((p_tore,p_boule)))) # heavy 
+p_saturne = Prim(saturne(),(255,255,255,255))
 
 def tore_anim():
 	object_name = "tore"
@@ -93,7 +95,7 @@ def tore_anim():
 	regard=  (0.,1.,0.)
 	vertical=(0.,0.,1.)
 	camera=Camera(oeil, droite, regard, vertical, 1.5, 100, normalize3((0., -1., 2.)))
-	anim(camera, tore, 20, object_name+"/"+object_name)
+	anim(camera, p_tore, 20, object_name+"/"+object_name)
 
 def roman_anim():
 	object_name = "roman"
@@ -102,7 +104,7 @@ def roman_anim():
 	regard=  (0.,1.,0.)
 	vertical=(0.,0.,1.)
 	camera=Camera(oeil, droite, regard, vertical, 1.5, 100, normalize3((0., -1., 2.)))
-	anim(camera, roman, 20, object_name+"/"+object_name)
+	anim(camera, p_roman, 20, object_name+"/"+object_name)
 
 def zitrus_anim():
 	object_name = "zitrus"
@@ -111,7 +113,8 @@ def zitrus_anim():
 	regard=  (0.,1.,0.)
 	vertical=(0.,0.,1.)
 	camera=Camera(oeil, droite, regard, vertical, 0.75, 100, normalize3((0., -1., 2.)))
-	anim(camera, zitrus, 20, object_name+"/"+object_name)
+	camera.renderChessBoard = True
+	anim(camera, p_zitrus, 20, object_name+"/"+object_name)
 
 def solitude_anim():
 	object_name = "solitude"
@@ -120,7 +123,7 @@ def solitude_anim():
 	regard=  (0.,1.,0.)
 	vertical=(0.,0.,1.)
 	camera=Camera(oeil, droite, regard, vertical, 8, 100, normalize3((0., -1., 2.)))
-	anim(camera, solitude, 20, object_name+"/"+object_name)
+	anim(camera, p_solitude, 20, object_name+"/"+object_name)
 
 
 def miau_anim():
@@ -130,7 +133,7 @@ def miau_anim():
 	regard=  (0.,1.,0.)
 	vertical=(0.,0.,1.)
 	camera=Camera(oeil, droite, regard, vertical, 8, 100, normalize3((0., -1., 2.)))
-	anim(camera, miau, 20, object_name+"/"+object_name)
+	anim(camera, p_miau, 20, object_name+"/"+object_name)
 
 def steiner2_anim():
 	object_name = "steiner2"
@@ -139,7 +142,7 @@ def steiner2_anim():
 	regard=  (0.,1.,0.)
 	vertical=(0.,0.,1.)
 	camera=Camera(oeil, droite, regard, vertical, 10, 100, normalize3((0., -1., 2.)))
-	anim(camera, steiner2, 20, object_name+"/"+object_name)
+	anim(camera, p_steiner2, 20, object_name+"/"+object_name)
 
 def steiner4_anim():
 	object_name = "steiner4"
@@ -148,7 +151,7 @@ def steiner4_anim():
 	regard=  (0.,1.,0.)
 	vertical=(0.,0.,1.)
 	camera=Camera(oeil, droite, regard, vertical, 5, 100, normalize3((0., -1., 2.)))
-	anim(camera, steiner4, 20, object_name+"/"+object_name)
+	anim(camera, p_steiner4, 20, object_name+"/"+object_name)
 
 def hyperboloide_2nappes():
 	object_name = "hyperboloide_2nappes"
@@ -157,7 +160,7 @@ def hyperboloide_2nappes():
 	regard=  (0.,1.,0.)
 	vertical=(0.,0.,1.)
 	camera=Camera(oeil, droite, regard, vertical, 5, 100, normalize3((0., -1., 2.)))
-	anim(camera, hyperboloide_2nappes, 20, object_name+"/"+object_name)
+	anim(camera, p_hyperboloide_2nappes, 20, object_name+"/"+object_name)
 
 def hyperboloide_1nappes():
 	object_name = "hyperboloide_1nappes"
@@ -166,7 +169,7 @@ def hyperboloide_1nappes():
 	regard=  (0.,1.,0.)
 	vertical=(0.,0.,1.)
 	camera=Camera(oeil, droite, regard, vertical, 5, 100, normalize3((0., -1., 2.)))
-	anim(camera, hyperboloide_1nappes, 20, object_name+"/"+object_name)
+	anim(camera, p_hyperboloide_1nappes, 20, object_name+"/"+object_name)
 
 def csg_op_anim():
 	object_name = "csg_op"
@@ -175,10 +178,19 @@ def csg_op_anim():
 	regard=  (0.,1.,0.)
 	vertical=(0.,0.,1.)
 	camera=Camera(oeil, droite, regard, vertical, 1.5, 100, normalize3((0., -1., 2.)))
-	anim(camera, csg_op, 20, object_name+"/"+object_name)
+	anim(camera, p_csg_op, 20, object_name+"/"+object_name)
+
+def saturne_anim():
+	object_name = "saturne"
+	oeil=(-0,-4,0)
+	droite=  (1.,0.,0.)
+	regard=  (0.,1.,0.)
+	vertical=(0.,0.,1.)
+	camera=Camera(oeil, droite, regard, vertical, 1, 100, normalize3((0., -1., 2.)))
+	anim(camera, p_saturne, 20, object_name+"/"+object_name)
 
 if __name__ == '__main__':
-	zitrus_anim()
+	saturne_anim()
 	'''
 	roman_anim()
 	tore_anim()
@@ -190,12 +202,5 @@ if __name__ == '__main__':
 	hyperboloide_2nappes()
 	hyperboloide_1nappes()
 	csg_op_anim()
+	saturne_anim()
 	'''
-	'''
-	steiner2_anim()
-	steiner4_anim()
-	miau_anim()
-	solitude_anim()
-	'''
-	#zitrus_anim()
-	
