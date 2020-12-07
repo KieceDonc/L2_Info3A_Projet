@@ -67,3 +67,12 @@ def saturne():
     y=Var("y")
     z=Var("z")
     return ((Nb(0.2)*x*x+Nb(0.4)*y*y+z*z+Nb(0.12))*(Nb(0.2)*x*x+Nb(0.4)*y*y+z*z+Nb(0.12))-Nb(0.5)*(Nb(0.2)*x*x+Nb(0.4)*y*y))*(Nb(0.4)*x*x+Nb(0.6)*y*y+Nb(0.6)*z*z-Nb(0.1))
+
+def sextiqueDeBarth(r):
+    x=Var("x")
+    y=Var("y")
+    z=Var("z")
+    P6 = (Nb(r)*Nb(r)*x*x-y*y)*(Nb(r)*Nb(r)*y*y-z*z)*(Nb(r)*Nb(r)*z*z-x*x)
+    alpha = (Nb(2)*Nb(r)+Nb(1))*(Nb(4e-1))
+    K = x*x+y*y+z*z-Nb(1)
+    return P6-alpha*K

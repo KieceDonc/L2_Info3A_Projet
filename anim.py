@@ -87,6 +87,7 @@ p_hyperboloide_2nappes = Prim(hyperboloide_2nappes(),(255,255,255,255))
 p_hyperboloide_1nappes = Prim(hyperboloide_1nappe(),(255,255,255,255))
 p_csg_op = Union((Intersection((p_tore,p_boule)),Difference((p_tore,p_boule)))) # heavy 
 p_saturne = Prim(saturne(),(255,255,255,255))
+p_sextiqueDeBarth = Prim(sextiqueDeBarth(0.5),(255,255,255,255))
 
 def tore_anim():
 	object_name = "tore"
@@ -189,8 +190,17 @@ def saturne_anim():
 	camera=Camera(oeil, droite, regard, vertical, 1, 100, normalize3((0., -1., 2.)))
 	anim(camera, p_saturne, 20, object_name+"/"+object_name)
 
+def sextiqueDeBarth_anim():
+	object_name = "sextiqueDeBarth"
+	oeil=(-0,-4,0)
+	droite=  (1.,0.,0.)
+	regard=  (0.,1.,0.)
+	vertical=(0.,0.,1.)
+	camera=Camera(oeil, droite, regard, vertical, 8, 100, normalize3((0., -1., 2.)))
+	anim(camera, p_sextiqueDeBarth, 20, object_name+"/"+object_name)
+
 if __name__ == '__main__':
-	saturne_anim()
+	sextiqueDeBarth_anim()
 	'''
 	roman_anim()
 	tore_anim()
@@ -203,4 +213,5 @@ if __name__ == '__main__':
 	hyperboloide_1nappes()
 	csg_op_anim()
 	saturne_anim()
+	sextiqueDeBarth_anim()
 	'''
