@@ -71,23 +71,23 @@ def anim(cam, obj, nb, nom):
 	del frames[0] # on retire la première image car pillow va crée le gif à partir de la première image + toutes celles donner dans frames. On doit donc retirer la première
 	gif=first_image.save('./'+folder_name+'/animation.gif', format='GIF', append_images=frames, save_all=True, duration=100, loop=0) # on crée le gif
 	print("gif generated")
-	
 
-#https://imaginary.org/fr/node/2221
+white_color = (255,255,255,255)
 
 p_tore = Prim(tore(0.45, 1.), (0,0,255,200))
-p_zitrus = Prim(zitrus(),(255,200,255,255))
-p_boule = Prim(boule((0., 2., -0.5), 1.), (255,0, 0,150))
-p_roman = Prim(roman(), (255, 200, 255, 255))
-p_solitude = Prim(solitude(),(255,200,255,255))
-p_miau = Prim(miau(),(255,200,255,255))
-p_steiner2 = Prim(steiner2(),(255,255,255,255))
-p_steiner4 = Prim(steiner4(),(255,255,255,255))
-p_hyperboloide_2nappes = Prim(hyperboloide_2nappes(),(255,255,255,255))
-p_hyperboloide_1nappes = Prim(hyperboloide_1nappe(),(255,255,255,255))
+p_zitrus = Prim(zitrus(),white_color)
+p_boule = Prim(boule((0., 2., -0.5), 1.), (255,0,0,150))
+p_roman = Prim(roman(), white_color)
+p_solitude = Prim(solitude(),white_color)
+p_miau = Prim(miau(),white_color)
+p_steiner2 = Prim(steiner2(),white_color)
+p_steiner4 = Prim(steiner4(),white_color)
+p_hyperboloide_2nappes = Prim(hyperboloide_2nappes(),white_color)
+p_hyperboloide_1nappes = Prim(hyperboloide_1nappe(),white_color)
 p_csg_op = Union((Intersection((p_tore,p_boule)),Difference((p_tore,p_boule)))) # heavy 
-p_saturne = Prim(saturne(),(255,255,255,255))
-p_sextiqueDeBarth = Prim(sextiqueDeBarth(0.5),(255,255,255,255))
+p_saturne = Prim(saturne(),white_color)
+p_sextiqueDeBarth = Prim(sextiqueDeBarth(0.5),white_color)
+p_weirdHeart = Prim(weirdHeart(),white_color)
 
 def tore_anim():
 	object_name = "tore"
@@ -105,6 +105,7 @@ def roman_anim():
 	regard=  (0.,1.,0.)
 	vertical=(0.,0.,1.)
 	camera=Camera(oeil, droite, regard, vertical, 1.5, 100, normalize3((0., -1., 2.)))
+	camera.renderChessBoard = True
 	anim(camera, p_roman, 20, object_name+"/"+object_name)
 
 def zitrus_anim():
@@ -125,7 +126,6 @@ def solitude_anim():
 	vertical=(0.,0.,1.)
 	camera=Camera(oeil, droite, regard, vertical, 8, 100, normalize3((0., -1., 2.)))
 	anim(camera, p_solitude, 20, object_name+"/"+object_name)
-
 
 def miau_anim():
 	object_name = "miau"
@@ -199,11 +199,20 @@ def sextiqueDeBarth_anim():
 	camera=Camera(oeil, droite, regard, vertical, 8, 100, normalize3((0., -1., 2.)))
 	anim(camera, p_sextiqueDeBarth, 20, object_name+"/"+object_name)
 
+def weirdHeart_anim():
+	object_name = "weirdHeart"
+	oeil=(-0,-4,-2)
+	droite=  (1.,0.,0.)
+	regard=  (0.,1.,0.)
+	vertical=(0.,0.,1.)
+	camera=Camera(oeil, droite, regard, vertical, 16, 100, normalize3((0., -1., 2.)))
+	anim(camera, p_weirdHeart, 20, object_name+"/"+object_name)
+
+
 if __name__ == '__main__':
-	sextiqueDeBarth_anim()
 	'''
-	roman_anim()
 	tore_anim()
+	roman_anim()
 	zitrus_anim()
 	solitude_anim()
 	miau_anim()
@@ -214,4 +223,5 @@ if __name__ == '__main__':
 	csg_op_anim()
 	saturne_anim()
 	sextiqueDeBarth_anim()
+	weirdHeart_anim()
 	'''

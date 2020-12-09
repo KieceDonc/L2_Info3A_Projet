@@ -1,0 +1,22 @@
+Plusieurs personnalisations ont été apportés au projet :
+- Rendu en multiprocessing pour les animations ( exploite le processeur à 100 %  donc rendu plus rapide ) + indique le temps du rendu
+- Possibilité de mettre une image de fond ( dans le dossier 'background', une seule image )
+- Possibilité de crée des intersections / différences / union avec plusieurs objets. Exemple : Intersection((obj1,obj2,obj3....))
+- Ajout d'un paramètre de transparence ( pas très incroyable ) 
+- Création automatique du dossier pour un rendu
+
+Quelques primitives ont été ajouté -> voir fichier primitives.py ( leur source est également donné )
+
+Pour lancer un rendu veuillez vous rendre dans anim.py. Vous trouvez toutes les primitives + une fonction associée pour les animer
+Exemple : p_tore pour la primitive du tore et tore_anim() pour lancer l'animation
+Pour lancer un rendu avec la couleur d'un échiquier veuillez vous rendre dans la fonction associée et rajouter 'camera.renderChessBoard = True' comme dans zitrus ou roman
+
+Attention, due au rendu en multiprocessing veuillez appeler les fonctions uniquement dans : if __name__ == '__main__' à la fin de anim.py
+
+J'ai choisi de ne pas reprendre la méthode donner pour les opérations booléennes mais je pense que le code est beaucoup moins performant
+La fonction Union() est notamment très lourde. 
+De plus l'animation de plusieurs opérations booléennes ne correspond pas au résultat attendu ( voir csg_op )
+
+La primitive ajouté la plus belle est saturne. 
+
+Normalement aucune bibliothèque n'a été rajouté et donc le code peut tourner "nativement"
