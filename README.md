@@ -62,10 +62,41 @@ Normalement aucune bibliothèque n'a été rajouté et donc le code peut tourner
 
 # • Compiler et exécuté
 
-```
-TODO
+Partons d'un exemple :
+
+<img src="https://www.imaginary.org/sites/default/files/styles/gallery-full/public/zitrus_rtp_0.jpg?itok=bB-yw3vT" width="300" height="300" />
+
+On ajoute d'abord la primitive dans primitives.py
+
+```python
+def zitrus():
+    x=Var("x")
+    y=Var("y")
+    z=Var("z")
+    return (x*x+z*z-y*y*y*(Nb(1)-y)*(Nb(1)-y)*(Nb(1)-y))
 ```
 
+On ajoute une nouvelle fonction dans anim.py
+
+```python
+def zitrus_anim():
+	p_zitrus = Prim(zitrus(),(255,255,255,255)) # Prim pour construire l'objet à partir d'une primitive, zitrus() on appel la primitive, (255,255,255,255) = rouge vert bleu transparence
+	object_name = "zitrus" # nom de la primitive
+	oeil=(-0,-4,0) # position de la caméra par rapport à l'origine
+	droite=  (1.,0.,0.) # vers la droite du spectateur
+	regard=  (0.,1.,0.) # regard du spectateur
+	vertical=(0.,0.,1.) # vertical du spectateur
+	camera=Camera(oeil, droite, regard, vertical, 0.75, 100, normalize3((0., -1., 2.))) # 0.75 = taille du monde
+	camera.renderChessBoard = True # nécessaire si on souhaite ajouter l'effet d'un échiquier
+	anim(camera, p_zitrus, 20, object_name+"/"+object_name) # 20 = nombres d'images pour l'animation, "object_name+"/"+object_name" = nom des images
+```
+
+Enfin on appel notre fonction dans le main 
+
+```python
+if __name__ == '__main__':
+	zitrus_anim()
+```
 # • Quelques exemples
 <img src="https://raw.githubusercontent.com/KieceDonc/L2_Info3A_Projet/master/hyperboloide_1nappes/animation.gif" /> <img src="https://raw.githubusercontent.com/KieceDonc/L2_Info3A_Projet/master/saturne/animation.gif" /> <img src="https://raw.githubusercontent.com/KieceDonc/L2_Info3A_Projet/master/hyperboloide_2nappes/animation.gif" /> 
 
